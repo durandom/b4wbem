@@ -1,0 +1,147 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY dhcpd.conf         "/etc/dhcpd.conf"                   >
+<!ENTITY dhcpd_status       "/etc/rc.d/init.d/dhcpd status |"   >
+<!ENTITY chkconfig_status   "chkconfig.sh --list dhcpd |"       >
+<!ENTITY dhcpd_switch       "| /etc/rc.d/init.d/dhcpd"          >
+<!ENTITY chkconfig_switch   "| chkconfig"                       >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+
+  <!-- ************* -->
+  <PROPERTY ID="Ranges">
+    <DEPENDENCIES>
+      <INOUT_DEP PROPERTY="DHCPEnabled" />
+    </DEPENDENCIES>
+    
+    <INOUT SECTION="s1" HANDLE="dhcpd.conf">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ****************** -->
+  <PROPERTY ID="HostMappings"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <INOUT_DEP PROPERTY="DHCPEnabled" />
+    </DEPENDENCIES>
+    
+    <INOUT SECTION="s1" HANDLE="dhcpd.conf">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- *********************** -->
+  <PROPERTY ID="DomainNameServers"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <INOUT_DEP PROPERTY="DHCPEnabled" />
+    </DEPENDENCIES>
+    
+    <INOUT SECTION="s1" HANDLE="dhcpd.conf">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ************* -->
+  <PROPERTY ID="Routers"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <INOUT_DEP PROPERTY="DHCPEnabled" />
+    </DEPENDENCIES>
+    
+    <INOUT SECTION="s1" HANDLE="dhcpd.conf">
+      <OPTIONAL_ASSIGNMENT TEXT="\toption routers $VAR;\n"
+			   DELETE_IF_DEFAULT="true" />
+      <REGEXP>.*(option routers\s+(.+?);).*</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ****************** -->
+  <PROPERTY ID="DHCPEnabled">
+    <IN HANDLE="dhcpd_status">
+      <FUNCTION/>
+    </IN>
+    <IN HANDLE="chkconfig_status">
+      <FLAG DEFAULT="0"
+	    VALUE="1" />
+      <REGEXP MODIFIERS="ms">(.*)(on)(.*)</REGEXP>
+    </IN>
+    <OUT HANDLE="dhcpd_switch">
+      <FUNCTION/>
+    </OUT>
+    <OUT HANDLE="chkconfig_switch">
+      <FUNCTION/>
+    </OUT>
+  </PROPERTY>
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+  <SECTION ID="s1">
+    <REGEXP MODIFIERS="ms">(.*^subnet .+?{)(.*)(^}.*)</REGEXP>
+  </SECTION>
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+  <HANDLE ID="dhcpd.conf"           NO="1"     TYPE="FILE"        ACCESS="RW"
+	  NAME="&dhcpd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="dhcpd_status"         NO="2"     TYPE="COMMAND"     ACCESS="R"
+	NAME="&dhcpd_status;">
+    <ERROR ONREAD="false"/>
+  </HANDLE>
+
+  <HANDLE ID="chkconfig_status"     NO="3"     TYPE="COMMAND"     ACCESS="R"
+	NAME="&chkconfig_status;">
+  </HANDLE>
+
+  <HANDLE ID="dhcpd_switch"         NO="4"     TYPE="COMMAND"     ACCESS="W"
+	NAME="&dhcpd_switch;">
+  </HANDLE>
+
+  <HANDLE ID="chkconfig_switch"     NO="5"     TYPE="COMMAND"     ACCESS="W"
+	NAME="&chkconfig_switch;">
+  </HANDLE>
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

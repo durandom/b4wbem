@@ -1,0 +1,15 @@
+<!DOCTYPE config [
+  <!ENTITY secrets SYSTEM "/etc/percimon/cimclient-secrets.xml">
+]>
+
+<config>
+
+  <cimom host="localhost"
+	 port="24666"
+	 name="cimom" />
+
+  <namespace default="root/PaulA" />
+
+  &secrets;
+
+</config>

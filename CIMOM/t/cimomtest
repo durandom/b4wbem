@@ -1,0 +1,202 @@
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+
+#
+# This script offers an easy way to start and stop a cimom for testing
+# purposes.
+#
+# Usage:
+#
+# cimomtest start
+# cimomtest stop
+# cimomtest status
+#
+# While "start" it creates a server config file ./cimserver.xml
+# and a client configuration file ./cimclient.xml
+#
+
+my $cimom        = "$FindBin::Bin/../bin/cimom";
+my $serverconfig = "$FindBin::Bin/cimserver.xml";
+my $clientconfig = "$FindBin::Bin/cimclient.xml";
+
+
+$_ = $ARGV[0];
+
+if (/^start$/) {
+
+    #
+    # Write server config
+    #
+    open SERVERCONFIG, "> $serverconfig" or die;
+
+
+    # Determine a port number that is not in use:
+
+    my $port = 24667; # Here we start our search.
+    
+    if (open NETSTAT, "netstat -tan |") {
+	undef $/;
+	my $connections = <NETSTAT>;
+	close NETSTAT;
+	
+	my $free = 0;
+	
+	while (! $free) {
+	    if ($connections =~ /:$port\b/) {
+		$port++;
+	    } else {
+		$free = 1;
+	    }
+	}
+    } else {
+	$port = 24700;  # What else could we do...?
+    }
+
+    my $pidfile = "$FindBin::Bin/cimom/logs/cimom.pid";
+
+    my $user   = 'testuser';
+    my $passwd = 'test';
+    
+    print SERVERCONFIG <<END_OF_SERVERCONFIG;
+<config>
+
+  <name>cimom</name>
+
+  <port>$port</port>
+
+
+  <dirs>
+    <serverroot>$FindBin::Bin/cimom</serverroot>
+
+    <engine>/usr/lib/percimon/cimom-engine</engine>
+
+    <repository>$FindBin::Bin/sandbox/xmlRoot</repository>
+
+    <libcim>$FindBin::Bin/../../libCIM/lib</libcim>
+    <paula>$FindBin::Bin/../lib</paula>
+
+    <sandbox>$FindBin::Bin/sandbox</sandbox>
+  </dirs>
+
+  <pidfile>$pidfile</pidfile>
+
+  <path>/bin:/usr/bin:/usr/sbin</path>
+
+  <valparser>/usr/bin/nsgmls</valparser>
+
+  <secrets>
+    <user>$user</user>
+    <password>$passwd</password>
+  </secrets>
+
+
+  <httpd.conf><![CDATA[
+LogLevel	debug
+StartServers	1
+MinSpareServers 1
+
+PerlRequire      conf/startup.pl
+PerlFreshRestart On
+
+PerlWarn On
+PerlTaintCheck On
+
+]]></httpd.conf>
+
+</config>
+END_OF_SERVERCONFIG
+
+    close SERVERCONFIG;
+
+
+    #
+    # Write client config
+    #
+    open CLIENTCONFIG, "> $clientconfig" or die;
+
+    $port = 24666 unless defined $port;
+
+    print CLIENTCONFIG <<END_OF_CLIENTCONFIG;
+<config>
+
+  <cimom host="localhost"
+	 port="$port"
+	 name="cimom" />
+
+  <namespace default="root/test" />
+
+  <secrets>
+    <user>$user</user>
+    <password>$passwd</password>
+  </secrets>
+
+</config>
+END_OF_CLIENTCONFIG
+
+    
+    system("$cimom --file $serverconfig start");
+
+    my $rc = ($? >> 8);
+    exit $rc if $rc;
+
+    # If $port is already in use, the system() would not fail, but of course,
+    # the cimom is not running.
+    # We test the existence of logs/httpd.pid:
+    my $i = 0;
+
+    while (! -e "$pidfile" and $i < 3) {
+	sleep 1;
+	$i++;
+    }
+    exit ((-e "$pidfile") ? 0 : 1);
+}
+
+
+
+
+if (/^stop$/) {
+    my $rc = 0;
+    
+    if (-e $serverconfig) {
+	#system("$cimom --cleanup --file $serverconfig stop");
+	system("$cimom --file $serverconfig stop");
+	$rc = ($? >> 8);
+	
+	# remove temporary config files
+	unlink("$serverconfig");
+    }
+    
+    # remove temporary config files
+    unlink("$clientconfig");
+    
+    exit $rc;
+}
+
+
+
+if (/^status$/) {
+    # If we don't have a $serverconfig, then cimom is not running...
+    exit 1 unless (-e $serverconfig);
+    
+    system("$cimom --file $serverconfig status");
+
+    exit ($? >> 8);
+}
+
+# Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+# USA.

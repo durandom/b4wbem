@@ -1,0 +1,75 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY httpd.conf         "/etc/httpd/conf/httpd.conf"        >
+<!ENTITY httpd_restart      "/etc/rc.d/init.d/httpd restart |"  >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+
+  <!-- **************** -->
+  <PROPERTY ID="ServerName"
+	    MIGHT_BE_NULL="true">
+    <INOUT HANDLE="httpd.conf">
+      <OPTIONAL_ASSIGNMENT DEFAULT="" 
+                           TEXT="ServerName $VAR\n"
+			   DELETE_IF_DEFAULT="true" />
+      <REGEXP MODIFIERS="ms">.*(ServerName\s*(.*?)\s*\n).*</REGEXP>
+    </INOUT>
+    <OUT HANDLE="httpd_restart">
+      <FUNCTION/>
+    </OUT>
+  </PROPERTY>
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+<!-- In httpd.conf no comments are allowed on a line after a directive. -->
+<!-- Lines may be continued on a new line if the last character is a \  -->
+<!-- (no whitespace after that!) -->
+  <HANDLE ID="httpd.conf"           NO="1"      TYPE="FILE"        ACCESS="RW"
+        NAME="&httpd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="httpd_restart"        NO="2"      TYPE="COMMAND"     ACCESS="W"
+	  NAME="&httpd_restart;">
+  </HANDLE>
+
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

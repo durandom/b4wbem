@@ -1,0 +1,61 @@
+<!DOCTYPE CLASS [
+]>
+
+<CLASS NAME="PaulA_User">
+
+  <PROPERTY NAME="Login" TYPE="string">
+    <QUALIFIER NAME="key" TYPE="boolean">
+      <VALUE>TRUE</VALUE>
+    </QUALIFIER>
+  </PROPERTY>
+
+  <PROPERTY       NAME="RealName"           TYPE="string"  />
+  <PROPERTY       NAME="Password"           TYPE="string"  />
+  
+  <PROPERTY.ARRAY NAME="FaxExtensions"      TYPE="uint16"  />
+  
+  <PROPERTY       NAME="HomeDirectory"      TYPE="string"  />
+  
+  <PROPERTY       NAME="LoginShell"         TYPE="string"  />
+  <PROPERTY       NAME="WebAccess"          TYPE="boolean" />
+  <PROPERTY       NAME="HasLocalHomepage"   TYPE="boolean" />
+  
+  <PROPERTY       NAME="MailForward"        TYPE="string"  />
+  <PROPERTY       NAME="AutoReply"          TYPE="boolean" />
+  <PROPERTY       NAME="ReplyText"          TYPE="string"  />
+  
+  <PROPERTY       NAME="PrivatePopServer"   TYPE="string"  />
+  <PROPERTY       NAME="PrivatePopLogin"    TYPE="string"  />
+  <PROPERTY       NAME="PrivatePopPassword" TYPE="string"  />
+  
+  <PROPERTY.ARRAY NAME="MailAliases"        TYPE="string"  />
+  <PROPERTY.ARRAY NAME="DistributionLists"  TYPE="string"  />
+  
+  <PROPERTY.ARRAY NAME="PaulAGroups"        TYPE="string"  />
+  <PROPERTY.ARRAY NAME="PaulAPermissions"   TYPE="string"  />
+  
+  
+  <METHOD NAME="Authenticate" TYPE="boolean">
+    <PARAMETER NAME="Password" TYPE="string" />
+  </METHOD>
+  
+</CLASS>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

@@ -1,0 +1,6 @@
+users:x:200:xyz,bbunny
+admins:x:201:hsimpson
+dialout:x:202:bbunny,hsimpson
+paula_admin:x:501:bbunny
+paula_user:x:502:mmouse,lluke
+paula_pnd:x:503:

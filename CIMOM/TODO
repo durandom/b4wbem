@@ -1,0 +1,35 @@
+This is a list over things that we plan to implement in PaulA. 
+The order of items does not reflect priority.
+A more or less extensive discussion follows after the list.
+
+
+o a lot of Provider things (including an up-to-date documentation)
+
+o Association Support
+
+o better Extrinsic Methods support
+
+o better Provider support (currently hardly in developement)
+  [a special ToDo list for Provider you will find in TODO.Provider]
+
+o Providing a repository database (instead of simple files)
+
+o More and better tests
+
+o More and better documentation
+
+
+(Far) Future Features
+======================
+(ideas for features which won't be implemented in the short run)
+
+o tests for given configurations 
+  (eg. testing your fetchmail configuration without danger of bouncing
+  mails)
+  automatic (after every change)? on demand?
+
+
+Discussion
+==========
+
+nothing to discuss at the moment ;-)
