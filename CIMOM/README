@@ -29,34 +29,22 @@ First of all, you need libCIM. Get and install the latest version of it.
 You find it at the same place you found this package ;-)
 If you don't want to (or can't) install libCIM into the system,
 you can place it parallel to the PaulA package, and everything will
-work "out if the box".
+work "out of the box".
 The only thing you have to do in this case is to create two links 
 "libCIM" resp. "PaulA" pointing to the "libCIM-[version]" resp. 
 "PaulA-[version]" directory, 
 
 
-Then, the cimom-engine RPM must be installed. If you haven't done
-this already, get the latest version of the cimom-engine Source-RPM (.src.rpm)
-from  ftp://ftp.id-pro.de/pub/CIM/SRPMS.
-
-Then perform the following steps:
-$ rpm -i cimom-engine-(version).src.rpm
-$ cd [rpmroot]/SPECS   
-# (rpmroot is /usr/src/redhat   under RedHat
-#  and        /usr/src/packages under SuSE)
-
-$ rpm -ba cimom-engine.spec
-# May take a while...
-
-$ rpm -ivh ../RPMS/i386/cimom-engine-(version).rpm
-
+You will need a apache with mod_perl support. Copy the httpd executable
+to /usr/sbin/cimom or change the <httpd> configuration variable in
+the cimserver.xml configuration file.
 
 Besides libCIM you need some other non standard Perl modules.
 We have mentioned this in the README of the libCIM package.
 Please take a look at it, if you haven't done this already.
 
 Furthermore, you need a properly installed nsgmls. It's included in
-either of the RPMs "jade" (Red Hat) and "sp" (SuSE).
+either of the RPMs "jade" (Red Hat) and "sp" (Debian and SuSE).
 
 
 
@@ -66,7 +54,7 @@ Configuration
 To configure, cd to the directory that contains this README file
 and type the following
 
-        perl Makefile.PL
+        perl Makefile.PL PREFIX=/usr
 
 Then to build you run make.
 
@@ -76,19 +64,13 @@ You can then test the module by typing:
 
         make test
 
+You can install by either simply typing:
 
-An installation is neither needed nor supported at the moment.
+        make install
 
+or to install to a different location:
 
-A remark to "make": when you call `make' the following file will be 
-created:
-
-    etc/cimomserver.xml
-
-It is created out of a "template" etc/templates/cimomserver.xml.
-So don't be surprised when you change something in this file and it
-is gone after the next call to "make". If you want to make permanent
-changes, you must change the template.
+	make install INSTALLPREFIX=/some/where/in/space
 
 Furthermore, all files in t/system/orig are copied to t/system.
 These are "pseudo system files", which are treated by the providers.
@@ -137,12 +119,10 @@ repository/
 Further informations
 --------------------
 
-Please visit the libCIM/PaulA website:
-http://paula.id-pro.de
+Please visit the B4wbem website:
+http://b4wbem.sourceforge.net
 
-There is a mailing list for libCIM/PaulA: Please visit
-http://paula.id-pro.de/mailinglist.html
-for details.
+There is a also a mailing list on the sourceforge project page.
 
 If you want to contribute good ideas or some code, or if you have found
 a problem with the existing code, please feel free to contact us via

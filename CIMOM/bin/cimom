@@ -7,7 +7,7 @@ $VERSION = '0.2';
 
 =head1 NAME
 
-B<cimom> - The percimon CIM Object Manager
+B<cimom> - The B4wbem CIM Object Manager
 
 =head1 SYNOPSIS
 
@@ -66,7 +66,7 @@ Print out usage information.
 
 B<cimom> is designed for use in conjunction with a Linux start script (but
 this is by no means mandatory!)
-Therefore the "start", "stop" and "restart" commands don't print any messages;
+Therefore the "start", "stop" and "restart" commands don\'t print any messages;
 they just return a 0 (zero) exit status, if the particular operation succeeded.
 (And a non-zero exit status, if not).
 
@@ -81,7 +81,7 @@ nothing a returns a non-zero exit status.
 =head1 CONFIGURATION FILE
 
 If B<cimom> is started with root permissions, it tries to obtain configuration
-data from F</etc/percimon/cimserver.xml>.
+data from F</etc/b4wbem/cimserver.xml>.
 
 If a non-privileged user starts B<cimom>, it tries to read
 F<$HOME/.cimserver.xml>, 
@@ -111,20 +111,18 @@ you will find the useful file F<logs/error_log> under this directory.
 
 Must be an absolute path name!
 
-=item I<engine>
+=item I<httpd>
 
-The F<cimom-engine> directory, which contains the F<apache> and
-F<mod_perl> directories.
+Absolute path to apache executable.
 
 =item I<repository>
 
 The repository root.
 
-=item I<libcim>, I<paula>
+=item I<inc>
 
-The directory in which the libCIM and PaulA-modules reside. If you would set
-I<PERL5LIB> to those values, then a e.g. C<use CIM::Class> and a
-C<use PaulA::CIMOM> would succeed.
+A space seperated list of directories to be added to the perl include path.
+We need to find the mod_perl, libcim and PaulA modules.
 
 =item I<sandbox>
 
@@ -180,7 +178,7 @@ my $verbose = 0;
 
 # default config file:
 my $configfile = $EFFECTIVE_USER_ID  ?
-    $ENV{HOME} . '/.cimserver.xml' : '/etc/percimon/cimserver.xml';
+    $ENV{HOME} . '/.cimserver.xml' : '/etc/b4wbem/cimserver.xml';
 
 
 GetOptions("help"     => \$help,
@@ -188,7 +186,6 @@ GetOptions("help"     => \$help,
 	   "cleanup"  => \$cleanup,
 	   "verbose"  => \$verbose,
 	  ) || usage();
-
 
 
 my $todo = (scalar @ARGV == 0) ? 'start' : $ARGV[0];
@@ -239,12 +236,11 @@ END_USAGE
 
 
 # configuration hash returned by XML::Simple
-my $config; 
+my $config;
 
 # For convenience:
-my ($serverroot, $engine,
-    $repository,
-    $libcim, $paula, $sandbox,
+my ($serverroot, $httpd,
+    $repository, $inc, $sandbox,
     $pidfile, $errorlog,
     $user, $password);
 
@@ -255,7 +251,7 @@ my $configread = 0;
 # Read configuration in $configfile
 #
 # @pre:  -
-# @post: $serverroot, $engine, $libcim, $paula are set,
+# @post: $serverroot, $httpd, $inc are set,
 #        $configread has true value
 #
 sub common {
@@ -270,28 +266,22 @@ sub common {
 	die "$progname: No <serverroot> found in $configfile\n";
 
     $serverroot =~ m|^/| or
-	die "$progname: Serverroot must be an absolute path name\n";  
+	die "$progname: Serverroot must be an absolute path name\n";
     
-    # engine is mandatory
-    $engine = $config->{dirs}->{engine};
-    defined $engine or
-	die "$progname: No <engine> found in $configfile\n";
+    # httpd is mandatory
+    $httpd = $config->{dirs}->{httpd};
+    defined $httpd or
+	die "$progname: No <httpd> found in $configfile\n";
 
     # repository is mandatory
     $repository = $config->{dirs}->{repository};
     defined $repository or
 	die "$progname: No <repository> found in $configfile\n";
 
-    # libcim is optional; missing entry means that a "use CIM::CIM" succeeds
-    # without any search path extension
-    $libcim = (defined $config->{dirs}->{libcim}
-		    ? $config->{dirs}->{libcim}
-		    : "");
-
-    # paula is mandatory (it's never in the standard perl INC search path.) 
-    $paula = $config->{dirs}->{paula};
-    defined $paula or
-	die "$progname: No <paula> found in $configfile\n";
+    # to be added to the standard perl INC search path.)
+    $inc = $config->{dirs}->{inc};
+    defined $inc or
+	die "$progname: No <inc> found in $configfile\n";
 
     # sandbox is optional (important for test purposes)
     $sandbox = $config->{dirs}->{sandbox};
@@ -343,16 +333,16 @@ sub start {
     mkpath(["$serverroot/logs"], 0, 0755);
     mkpath(["$serverroot/conf"], 0, 0755);
 
-    
+    # FIXME: mime.types should be already installed / system wide <urandom>
     # Copy file mime.types to the conf/ directory:
     unless (-e "$serverroot/conf/mime.types") {
-	copy("$engine/apache/conf/mime.types",
-	     "$serverroot/conf/mime.types") or
-	    die "$progname: cannot copy mime.types: $!";
+      copy("/etc/mime.types",
+	   "$serverroot/conf/mime.types") or
+	     die "$progname: cannot copy mime.types: $!";
     }
-
+    
     # create ServerConfigFile for Apache/CIMOM server:
-    my $apache_config = "$serverroot/conf/cimom-engine.conf";
+    my $apache_config = "$serverroot/conf/cimom.conf";
 
     my $old_umask = umask 0077;
     open(CONF, "> $apache_config") or
@@ -427,7 +417,7 @@ LOCATION_CIMOM
 
     print START <<END_STARTUP_PL;
 BEGIN {
-    use lib qw($engine/mod_perl $libcim $paula);
+    use lib qw($inc);
     use PaulA::CIMOM;
 }
 
@@ -442,7 +432,8 @@ END_STARTUP_PL
     my @args;
     push @args, '-d', $serverroot, '-f', $apache_config;
 
-    system "$engine/apache/bin/cimom-engine", @args;
+print "SYEX: $httpd ", join (' ', @args) , "\n";
+    system "$httpd", @args;
 
     my $rc = ($? >> 8);
 
@@ -561,7 +552,7 @@ sub pid {
 	my $cmdline = <CMD>;
 	close CMD;
 	
-	return $pid  if $cmdline =~ /cimom-engine/; 
+	return $pid  if $cmdline =~ /cimom/; 
     } else {
 	unlink("$serverroot/logs/httpd.pid");
 	return 0;

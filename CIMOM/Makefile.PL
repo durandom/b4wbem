@@ -23,7 +23,7 @@ push    @tests, 'cimomstop.t';
 WriteMakefile(
 	      NAME           => 'PaulA',
 	      VERSION_FROM   => 'lib/PaulA.pm',
-	      
+
 	      PREREQ_PM => {
 			    'CIM'             => 0,
 			    'Term::ANSIColor' => 0,
@@ -48,19 +48,19 @@ sub MY::install {
     
     my $text = <<EOF;
 install:
-	install -d -m 0755 \$(PREFIX)/etc/percimon
-	install -m 0644 etc/cimserver.xml etc/cimclient.xml \$(PREFIX)/etc/percimon
-	install -m 0600 etc/cim*-secrets.xml \$(PREFIX)/etc/percimon
-	install -d -m 0755 \$(PREFIX)/usr/sbin
-	install -m 0755 bin/cimom \$(PREFIX)/usr/sbin
-	install -d -m 0755 \$(PREFIX)/var/lib/percimon/repository/xmlRoot/PaulA
-	install -m 0644 repository/xmlRoot/PaulA/S-CIM_Schema23.xml \$(PREFIX)/var/lib/percimon/repository/xmlRoot/PaulA
-	install -m 0644 repository/xmlRoot/PaulA/C-PaulA_*.xml \$(PREFIX)/var/lib/percimon/repository/xmlRoot/PaulA
-	install -d -m 0755 \$(PREFIX)/usr/lib/percimon/PaulA
-	cp -a lib \$(PREFIX)/usr/lib/percimon/PaulA
+	install -d -m 0755 \$(INSTALLPREFIX)/etc/b4wbem
+	install -m 0644 etc/cimserver.xml etc/cimclient.xml \$(INSTALLPREFIX)/etc/b4wbem
+	install -m 0600 etc/cim*-secrets.xml \$(INSTALLPREFIX)/etc/b4wbem
+	install -d -m 0755 \$(INSTALLPREFIX)/\$(PREFIX)/sbin
+	install -m 0755 bin/cimom \$(INSTALLPREFIX)/\$(PREFIX)/sbin/start_cimom
+	install -d -m 0755 \$(INSTALLPREFIX)/\$(PREFIX)/share/b4wbem/repository/xmlRoot/PaulA
+	install -m 0644 repository/xmlRoot/PaulA/S-CIM_Schema23.xml \$(INSTALLPREFIX)/\$(PREFIX)/share/b4wbem/repository/xmlRoot/PaulA
+	install -m 0644 repository/xmlRoot/PaulA/C-PaulA_*.xml \$(INSTALLPREFIX)/\$(PREFIX)/share/b4wbem/repository/xmlRoot/PaulA
+	install -d -m 0755 \$(INSTALLPREFIX)/\$(PREFIX)/lib/b4wbem/PaulA
+	cp -a lib/* \$(INSTALLPREFIX)/\$(PREFIX)/lib/b4wbem/PaulA
 
-	install -d -m 0755 \$(PREFIX)/etc/percimon/PaulA
-	install -m 0644 t/skel/files/groups.paula \$(PREFIX)/etc/percimon/PaulA
+	install -d -m 0755 \$(INSTALLPREFIX)/etc/b4wbem/PaulA
+	install -m 0644 t/skel/files/groups.paula \$(INSTALLPREFIX)/etc/b4wbem/PaulA
 
 EOF
     return $text;
@@ -83,6 +83,7 @@ sub MY::realclean {
 			lib/PaulA/Provider/PaulA
 			t/cimserver.xml
 			t/cimclient.xml
+			etc/cimserver.xml
 		       );
     
     my @removeDirList = qw(

@@ -20,7 +20,6 @@ my $cimom        = "$FindBin::Bin/../bin/cimom";
 my $serverconfig = "$FindBin::Bin/cimserver.xml";
 my $clientconfig = "$FindBin::Bin/cimclient.xml";
 
-
 $_ = $ARGV[0];
 
 if (/^start$/) {
@@ -69,12 +68,11 @@ if (/^start$/) {
   <dirs>
     <serverroot>$FindBin::Bin/cimom</serverroot>
 
-    <engine>/usr/lib/percimon/cimom-engine</engine>
+    <httpd>/usr/sbin/cimom</httpd>
 
     <repository>$FindBin::Bin/sandbox/xmlRoot</repository>
 
-    <libcim>$FindBin::Bin/../../libCIM/lib</libcim>
-    <paula>$FindBin::Bin/../lib</paula>
+    <inc>$FindBin::Bin/../../libCIM/lib $FindBin::Bin/../lib</inc>
 
     <sandbox>$FindBin::Bin/sandbox</sandbox>
   </dirs>
@@ -96,6 +94,7 @@ LogLevel	debug
 StartServers	1
 MinSpareServers 1
 
+ServerName localhost
 PerlRequire      conf/startup.pl
 PerlFreshRestart On
 

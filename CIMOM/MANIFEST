@@ -29,7 +29,6 @@ doc/Provider_Status.txt
 etc/cimclient-secrets.xml
 etc/cimclient.xml
 etc/cimserver-secrets.xml
-etc/cimserver.xml
 lib/PaulA.pm
 lib/PaulA/CIMOM.pm
 lib/PaulA/Provider.pm

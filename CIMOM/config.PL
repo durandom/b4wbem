@@ -3,9 +3,24 @@
 #
 use strict;
 
-# Does nothing currently...
+open M, "Makefile";
+my $prefix;
+while (<M>) {
+  if (/^PREFIX = (.+)$/) {
+    $prefix = $1;
+    last;
+  }
+}
+close M;
 
-
+open C, ">etc/cimserver.xml";
+open T, "etc/cimserver.xml.template";
+while (<T>) {
+  s/_PREFIX_/$prefix/g;
+  print C;
+}
+close C;
+close T;
 
 
 # Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.

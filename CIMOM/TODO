@@ -28,6 +28,11 @@ o tests for given configurations
   mails)
   automatic (after every change)? on demand?
 
+Small Things
+============
+This is a list of annoying, but harmless bugs
+* Make apache/cimom use the system wide mime.types file
+* Make everything installable at a given PREFIX
 
 Discussion
 ==========
