@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE config [
 
-<!ENTITY secrets SYSTEM "/etc/percimon/cimserver-secrets.xml">
+<!ENTITY secrets SYSTEM "/etc/b4wbem/cimserver-secrets.xml">
 ]>
 
 <config>
@@ -12,13 +12,13 @@
 
 
   <dirs>
-    <serverroot>/etc/percimon/cimom</serverroot>
+    <serverroot>/etc/b4wbem/cimom</serverroot>
 
-    <engine>/usr/lib/percimon/cimom-engine</engine>
+    <httpd>_PREFIX_/sbin/cimom</httpd>
 
-    <repository>/var/lib/percimon/repository/xmlRoot</repository>
+    <repository>_PREFIX_/share/b4wbem/repository/xmlRoot</repository>
 
-    <paula>/usr/lib/percimon/PaulA/lib</paula>
+    <inc>_PREFIX_/lib/b4wbem/PaulA _PREFIX_/lib/b4wbem/mod_perl</inc>
   </dirs>
 
   <pidfile>/var/run/cimom.pid</pidfile>
@@ -45,7 +45,7 @@
   <httpd.conf><![CDATA[
 LogLevel	notice
 
-
+ServerName	localhost
 StartServers	1
 MinSpareServers 1
 
