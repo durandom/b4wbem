@@ -11,6 +11,7 @@ WriteMakefile(
 			    'Term::ANSIColor' => 0,
 			    'Tie::SecureHash' => 0,
 			    'XML::DOM'        => 0,
+			    'XML::Simple'     => 0,
 			    'Carp::Assert'    => 0,
 			    'MIME::Base64'    => 0,
 			   },
