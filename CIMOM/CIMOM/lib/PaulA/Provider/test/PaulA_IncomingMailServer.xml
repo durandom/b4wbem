@@ -1,0 +1,142 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY fetchmailrc    "files/fetchmailrc"      >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+  <!-- *********** -->
+  <PROPERTY ID="Login"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <OUT_DEP PROPERTY="Password" />
+      <OUT_DEP PROPERTY="Protocol" />
+    </DEPENDENCIES>
+    <INOUT SECTION="s1" HANDLE="fetchmailrc">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+  
+  <!-- ************** -->
+  <PROPERTY ID="Password"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <OUT_DEP PROPERTY="Protocol" />
+    </DEPENDENCIES>
+    <INOUT SECTION="s1" HANDLE="fetchmailrc">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+  
+  <!-- ***************** -->
+  <PROPERTY ID="LocalDomain"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <OUT_DEP PROPERTY="Protocol" />
+    </DEPENDENCIES>
+    <INOUT SECTION="s1" HANDLE="fetchmailrc">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- *************** -->
+  <PROPERTY ID="Protocol">
+    <DEPENDENCIES>
+      <OUT_DEP PROPERTY="Password"/>
+    </DEPENDENCIES>
+    <INOUT SECTION="s1" HANDLE="fetchmailrc" FORCE_WRITE="true">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+  
+  <!-- ******************** -->
+  <PROPERTY ID="Extra_Envelope"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <OUT_DEP PROPERTY="Protocol" />
+      <OUT_DEP PROPERTY="Login" />
+      <OUT_DEP PROPERTY="Password" />
+    </DEPENDENCIES>
+    <INOUT SECTION="s1" HANDLE="fetchmailrc">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ******************** -->
+  <PROPERTY ID="Extra_QVirtual"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <OUT_DEP PROPERTY="Protocol" />
+      <OUT_DEP PROPERTY="Login" />
+      <OUT_DEP PROPERTY="Password" />
+    </DEPENDENCIES>
+    <INOUT SECTION="s1" HANDLE="fetchmailrc">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+
+  <!-- ********************* -->
+  <!-- **** KEYBINDINGS **** -->
+  <!-- ********************* -->
+  <KEYBINDINGS>
+    <IN HANDLE="fetchmailrc">
+    </IN>
+  </KEYBINDINGS>
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+  <SECTION ID="s1">
+    <REGEXP MODIFIERS="ms">(.*)^(poll\s+$KEY_ServerName\s+[^;]*?(?:(?:proto\s+pop3:?\s+user\s+$KEY_Login\s+[^;]+?)|(?:proto\s+ETRN[^;]*?));)$(.*)</REGEXP>
+  </SECTION>
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+  <HANDLE ID="fetchmailrc"      NO="1"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&fetchmailrc;">
+    <WHITESPACE WRITE=" "/>
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+    <ERROR ONREAD="false"/>
+    <PERMISSIONS UMASK="0600"/>    <!-- on system: works only for root yet -->
+  </HANDLE>
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

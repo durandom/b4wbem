@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<!DOCTYPE config [
+
+<!ENTITY secrets SYSTEM "/etc/percimon/cimserver-secrets.xml">
+]>
+
+<config>
+
+  <name>cimom</name>
+
+  <port>24666</port>
+
+
+  <dirs>
+    <serverroot>/etc/percimon/cimom</serverroot>
+
+    <engine>/usr/lib/percimon/cimom-engine</engine>
+
+    <repository>/var/lib/percimon/repository/xmlRoot</repository>
+
+    <paula>/usr/lib/percimon/PaulA/lib</paula>
+  </dirs>
+
+  <pidfile>/var/run/cimom.pid</pidfile>
+  <errorlog>/var/log/cimom/error_log</errorlog>
+
+
+  <!-- "trusted" locations for external programs. $ENV{PATH} will be -->
+  <!-- set to this. -->
+  <path>/bin:/usr/bin:/usr/sbin</path>
+
+  <!-- external validating XML parser -->
+  <!-- This MUST be nsgmls at the moment -->
+  <valparser>/usr/bin/nsgmls</valparser>
+
+  &secrets;
+
+
+<!-- The following is taken literally as the apache config file, -->
+<!-- plus some few additional automatically generated lines -->
+<!-- (such as "Port xyz"). -->
+
+<!-- Please make modifications ONLY IF YOU EXACTLY KNOW WHAT YOU ARE DOING! -->
+
+  <httpd.conf><![CDATA[
+LogLevel	notice
+
+
+StartServers	1
+MinSpareServers 1
+
+PerlRequire      conf/startup.pl
+PerlFreshRestart On
+
+PerlWarn On
+PerlTaintCheck On
+
+]]></httpd.conf>
+
+</config>

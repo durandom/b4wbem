@@ -1,0 +1,300 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY config.faxCAPI     "/var/spool/fax/etc/config.faxCAPI" >
+<!ENTITY capircvd.conf      "/etc/capircvd/capircvd.conf"       >
+<!ENTITY aliases            "/etc/postfix/aliases"              >
+<!ENTITY inittab            "/etc/inittab"                      >
+<!ENTITY postmap_aliases    "| postmap aliases"                 >
+<!ENTITY hup_init           "| killall -HUP init"               >
+<!ENTITY kill_capircvd      "| killall -9 capircvd"             >
+<!ENTITY kill_c2faxrecv     "| killall -9 c2faxrecv"            >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+  <!-- ***************** -->
+  <PROPERTY ID="FaxEnabled">
+    <INOUT HANDLE="inittab">
+      <FLAG DEFAULT="0"
+            VALUE="1" 
+            TEXT="capi:2345:respawn:/usr/sbin/capircvd -D 1 -L /var/log/capirvd\n"/>
+            <REGEXP MODIFIERS="ms">(.*^)(capi:2345:respawn:/usr/sbin/capircvd -D 1 -L /var/log/capirvd)($.*)</REGEXP>
+    </INOUT>
+    <INOUT HANDLE="inittab">
+      <FLAG DEFAULT="0"
+            VALUE="1" 
+            TEXT="fr:2345:respawn:/usr/local/bin/c2faxrecv\n"/>
+            <REGEXP MODIFIERS="ms">(.*^)(fr:2345:respawn:/usr/local/bin/c2faxrecv)($.*)</REGEXP>
+    </INOUT>
+    <OUT HANDLE="kill_capircvd">
+    </OUT>
+    <OUT HANDLE="kill_c2faxrecv">
+    </OUT>
+    <OUT HANDLE="hup_init">
+    </OUT>
+  </PROPERTY>
+
+  <!-- ******************** -->
+  <PROPERTY ID="HeaderIDString"
+	    MIGHT_BE_NULL="true">
+    <INOUT HANDLE="config.faxCAPI">
+      <OPTIONAL_ASSIGNMENT 
+                           TEXT="LocalIdentifier: $VAR\n"
+			   DELETE_IF_DEFAULT="true" />
+      <REGEXP MODIFIERS="ms">.*(^LocalIdentifier:\s+(.+?)\s*\n).*</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ********************* -->
+  <PROPERTY ID="HeaderFaxNumber"
+	    MIGHT_BE_NULL="true">
+    <INOUT HANDLE="config.faxCAPI">
+      <OPTIONAL_ASSIGNMENT
+                           TEXT="FAXNumber: $VAR\n"
+			   DELETE_IF_DEFAULT="true" />
+      <REGEXP MODIFIERS="ms">.*(^FAXNumber:\s+(.+?)\s*\n).*</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ************************ -->
+  <PROPERTY ID="DefaultMailForward"
+	    MIGHT_BE_NULL="true">
+    <INOUT HANDLE="aliases">
+      <OPTIONAL_ASSIGNMENT
+                            TEXT="fax_default:\t$VAR\n"
+                            DELETE_IF_DEFAULT="true"/>
+      <REGEXP MODIFIERS="ms">.*^(fax_default:[^\n\S]+(\S+)\n)$.*</REGEXP>
+    </INOUT>
+    <OUT HANDLE="postmap_aliases">
+    </OUT>
+  </PROPERTY>
+
+  <!-- ***************** -->
+  <PROPERTY ID="CountryCode"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <INOUT_DEP PROPERTY="Prefix" />
+    </DEPENDENCIES>
+    <INOUT SECTION="global" HANDLE="capircvd.conf">
+      <OPTIONAL_ASSIGNMENT
+                            TEXT="iprefix\t$VAR"
+                            DELETE_IF_DEFAULT="true"/>
+      <REGEXP MODIFIERS="ms">.*^(iprefix[^\n\S]+(\d+))$.*</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ************** -->
+  <PROPERTY ID="AreaCode"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <INOUT_DEP PROPERTY="Prefix" />
+    </DEPENDENCIES>
+    <INOUT SECTION="global" HANDLE="capircvd.conf">
+      <OPTIONAL_ASSIGNMENT
+                            TEXT="nprefix\t$VAR"
+                            DELETE_IF_DEFAULT="true"/>
+      <REGEXP MODIFIERS="ms">.*^(nprefix[^\n\S]+(\d+))$.*</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- **************** -->
+  <PROPERTY ID="BaseNumber"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="CountryCode"/>
+      <IN_DEP PROPERTY="AreaCode" />
+      <INOUT_DEP PROPERTY="Prefix" />
+    </DEPENDENCIES>
+    <IN SECTION="controller" HANDLE="capircvd.conf2">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </IN>
+    <OUT HANDLE="dummy">
+      <!-- otherwise additionalOutStuff wouldn't be done -->
+    </OUT>
+  </PROPERTY>
+
+  <!-- ************ -->
+  <PROPERTY ID="Prefix"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="AreaCode" />
+      <IN_DEP PROPERTY="CountryCode" />
+      <IN_DEP PROPERTY="BaseNumber" />
+      <INOUT_DEP PROPERTY="ValidFaxExtensions" />
+      <INOUT_DEP PROPERTY="NumLength" />
+    </DEPENDENCIES>
+    <INOUT SECTION="controller" HANDLE="capircvd.conf3">
+      <OPTIONAL_ASSIGNMENT
+                            TEXT="prefix\t$VAR"
+                            DELETE_IF_DEFAULT="true"/>
+      <REGEXP MODIFIERS="ms">.*^(prefix[^\n\S]+(\d+))$.*</REGEXP>
+    </INOUT>
+    <!-- Because Prefix shouldn't be changed directly, there's no
+    additionalOutStuff function -->
+  </PROPERTY>
+
+  <!-- *************** -->
+  <PROPERTY ID="NumLength"
+	    MIGHT_BE_NULL="true">
+    <INOUT SECTION="controller" HANDLE="capircvd.conf5">
+      <OPTIONAL_ASSIGNMENT  
+                            TEXT="numlength\t$VAR"
+                            DELETE_IF_DEFAULT="true"/>
+      <REGEXP MODIFIERS="ms">.*^(numlength[^\n\S]+(\d+))$.*</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ************************ -->
+  <PROPERTY ID="ValidFaxExtensions"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="Prefix" />
+      <INOUT_DEP PROPERTY="NumLength" />
+    </DEPENDENCIES>
+    <IN HANDLE="capircvd.conf4">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </IN>
+    <OUT HANDLE="capircvd.conf4" FORCE_WRITE="true">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </OUT>
+  </PROPERTY>
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+  <SECTION ID="global">
+    <REGEXP MODIFIERS="ms">(.*^)(=global\n.*?\n)(\n.*)</REGEXP>
+  </SECTION>
+
+  <SECTION ID="controller">
+    <REGEXP MODIFIERS="ms">(.*^)(=controller1\n.*?\n)(\n.*)</REGEXP>
+  </SECTION>
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+  <HANDLE ID="config.faxCAPI"       NO="1"      TYPE="FILE"     ACCESS="RW"
+          NAME="&config.faxCAPI;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="capircvd.conf"        NO="2"      TYPE="FILE"     ACCESS="RW"
+	  NAME="&capircvd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="capircvd.conf2"       NO="3"      TYPE="FILE"     ACCESS="RW"
+	  NAME="&capircvd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="dummy"                NO="4"      TYPE="DUMMY"    ACCESS="W">
+  </HANDLE>
+
+  <HANDLE ID="capircvd.conf3"       NO="5"      TYPE="FILE"     ACCESS="RW"
+	  NAME="&capircvd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="capircvd.conf4"       NO="6"      TYPE="FILE"     ACCESS="RW"
+	  NAME="&capircvd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="capircvd.conf5"       NO="7"      TYPE="FILE"     ACCESS="RW"
+	  NAME="&capircvd.conf;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="aliases"              NO="8"      TYPE="FILE"     ACCESS="RW"
+	  NAME="&aliases;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="postmap_aliases"      NO="9"      TYPE="COMMAND"  ACCESS="W"
+	  NAME="&postmap_aliases;">
+  </HANDLE>
+
+  <HANDLE ID="inittab"              NO="10"     TYPE="FILE"     ACCESS="RW"
+	  NAME="&inittab;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="kill_capircvd"        NO="11"     TYPE="COMMAND"     ACCESS="W"
+	  NAME="&kill_capircvd;">
+    <ERROR ONWRITE="false"/>
+  </HANDLE>
+
+  <HANDLE ID="kill_c2faxrecv"       NO="12"     TYPE="COMMAND"     ACCESS="W"
+	  NAME="&kill_c2faxrecv;">
+    <ERROR ONWRITE="false"/>
+  </HANDLE>
+
+  <HANDLE ID="hup_init"             NO="13"     TYPE="COMMAND"     ACCESS="W"
+	  NAME="&hup_init;">
+  </HANDLE>
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

@@ -1,0 +1,7 @@
+# inittab       This file describes how the INIT process should set up
+#               the system in a certain run-level.
+#
+#capi:2345:respawn:/usr/sbin/capircvd -D 1 -L /var/log/capirvd
+#fr:2345:respawn:/usr/local/bin/c2faxrecv
+#
+

@@ -1,0 +1,61 @@
+0.41 (2000-12-20)
+  - updated documentation (POD)
+  - updated tests and introduced common.pm for common stuff of all tests
+
+0.40 (2000-12-07)
+  - added basic authentication in CIM::Transport::HTTP
+  - CIM::Client: UseConfig now can handle both $CIM_CLIENT_CONFIG and a 
+    specified filename
+  - CIM::Utils: present() now can handle hashes, too and does recursive
+    output (a little bit like Data::Dumper)
+  - CIM::Utils now has functions red(), green(), ... [useful for development]
+  - minor bugfix in CIM::Utils in cpprint()
+  - added CIM::OperationMessage and CIM::OperationResponseMessage
+  - removal of Message.pm, Kernel.pm and Envelope.pm
+  - reconstructions in CIM::Client and CIM::HTTP::Transport (of course)
+  - bugfix in CIM::Value in setting non valid types via new()
+  - bugfix in CIM::Value in handling empty arrays
+  - introduced error() in CIM::Base, and therefore more verbose error
+    messages, too
+  - added "set" feature on CIM::Value->value()
+  - introduced isKeyProperty() in CIM::Property
+  - added CIM::Class->keyProperties()
+
+0.31 (2000-09-18)
+  - added prettyXML() in CIM::Utils
+
+0.3 (2000-09-18)
+  - added classes CIM::Method and CIM::Parameter
+  - CIM::Client uses HTTP transport now
+  - modifications in CIM::NamespacePath
+  - basic functionality in CIM::Transport::HTTP
+  - added class CIM::OperationRequestMessage
+
+0.2 (2000-08-24)
+  - added REFERENCECLASS attribute to CIM::Property
+  - bugfixes in CIM::Property in toXML()
+  - removed NamedInstance.pm (functionality taken over by ValueObject.pm)
+  - implemented the VALUE.NAMEDINSTANCE, VALUE.NAMEDOBJECT,
+    VALUE.OBJECT, VALUE.OBJECTWITHLOCALPATH and VALUE.OBJECTWITHPATH
+    XML tags in CIM::ValueObject
+  - added distinction between LOCALNAMESPACEPATH and NAMESPACEPATH in
+    CIM::NamespacePath
+  - added CLASSPATH, INSTANCEPATH, LOCALCLASSPATH, LOCALINSTANCEPATH
+    and OBJECTPATH functionality to CIM::ObjectName
+  - changed the handling of keybindings in CIM::ObjectName
+  - bugfix in CIM::Qualifier, CIM::ObjectName, and CIM::Scopes
+    (random order of elements/attributes in toXML)
+  - bugfix in CIM::Utils (CDATA with multiple lines)
+  - conceptual changes concerning the value() function in CIM::Property and
+    CIM::Qualifiers (now returns a CIM::Value instead of it's value)
+  - added CIM::Association class (derived from CIM::Instance)
+  - added isAssociation function to CIM::Class
+
+0.1.1 (2000-07-26)
+  - added VALUE.REFERENCE and VALUE.REFARRAY functionality to CIM::Value
+  - added PROPERTY.REFERENCE functionality to CIM::Property
+  - added more tests
+  - added more documentation
+
+0.1 (2000-07-22)
+  - first release.

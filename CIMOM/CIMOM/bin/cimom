@@ -1,0 +1,600 @@
+#!/usr/bin/perl -w
+use strict;
+use vars qw($progname $VERSION);
+($progname = $0) =~ s|.*/||;
+$VERSION = '0.2';
+
+
+=head1 NAME
+
+B<cimom> - The percimon CIM Object Manager
+
+=head1 SYNOPSIS
+
+B<cimom> [OPTIONS] [start|stop|restart|status]
+
+=head1 DESCRIPTION
+
+B<cimom> is a CIM Object Manager (CIM Server, respectively). This is, by
+definition, an HTTP server that receives and processes CIM Operation Requests
+and issues CIM Operation Responses. Technically, B<cimom> is a mixture of
+Apache, mod_perl and a lot of Perl modules.
+
+=head2 Starting and stopping B<cimom>
+
+The simplest way to start the B<cimom> is to type just
+
+ $ ./cimom
+
+This is the same as
+
+ $ ./cimom start
+
+If you perform the start or stop operations repeatedly, they do nothing
+(e.g. starting a running cimom does no harm and returns a zero (true)
+value. See L<"RETURN VALUE"> for details.).
+
+=head1 OPTIONS
+
+Options can be used with a single '-' and can be abbreviated.
+
+=over 4
+
+=item B<--file> F<file>
+
+Specify an alternate configuration file.
+
+See L<"CONFIGURATION FILE"> for defaults.
+
+=item B<--cleanup>
+
+Has only an effect if used with the 'stop' argument. B<cimom> removes
+all files it created during startup. (May be dangerous, mainly for
+testing purposes!)
+
+=item B<--verbose>
+
+Increases verbosity.
+
+=item B<--help>
+
+Print out usage information.
+
+=back
+
+=head1 RETURN VALUE
+
+B<cimom> is designed for use in conjunction with a Linux start script (but
+this is by no means mandatory!)
+Therefore the "start", "stop" and "restart" commands don't print any messages;
+they just return a 0 (zero) exit status, if the particular operation succeeded.
+(And a non-zero exit status, if not).
+
+If you want a little feedback on the command line, we suggest something like
+
+ $ ./cimom start && echo success
+
+The status operation works in the following way: If cimom is running, it prints
+its PID to STDOUT and returns a 0 (zero) exit status. Otherwise, it prints
+nothing a returns a non-zero exit status.
+
+=head1 CONFIGURATION FILE
+
+If B<cimom> is started with root permissions, it tries to obtain configuration
+data from F</etc/percimon/cimserver.xml>.
+
+If a non-privileged user starts B<cimom>, it tries to read
+F<$HOME/.cimserver.xml>, 
+
+In both cases you can specify another file with the B<--file> option.
+
+B<cimom> uses XML as configuration file syntax. The I<config> root
+element must contain I<name>, I<port>, I<dirs>, I<path>, I<valparser>,
+I<secrets> and I<httpd.conf> subelements.
+
+It can contain I<pidfile> and I<errorlog> subelements.
+
+The I<name> element contains the "name" of the CIMOM, i.e. the path name of
+the CIMOM URL. If you omit the leading slash, it will be added.
+
+The I<port> element contains the number of the port on which B<cimom> listens.
+
+The I<dirs> element groups the configuration of some locations in the
+file system. It can contain the following subelements:
+
+=over 4
+
+=item I<serverroot>
+
+Conforms to the usual Apache I<ServerRoot> directive. Among other things,
+you will find the useful file F<logs/error_log> under this directory.
+
+Must be an absolute path name!
+
+=item I<engine>
+
+The F<cimom-engine> directory, which contains the F<apache> and
+F<mod_perl> directories.
+
+=item I<repository>
+
+The repository root.
+
+=item I<libcim>, I<paula>
+
+The directory in which the libCIM and PaulA-modules reside. If you would set
+I<PERL5LIB> to those values, then a e.g. C<use CIM::Class> and a
+C<use PaulA::CIMOM> would succeed.
+
+=item I<sandbox>
+
+The directory that contains a testing environment.
+
+=back
+
+=item I<pidfile>
+
+Conforms to the usual Apache I<PidFile> directive. Optional.
+
+
+=item I<errorlog>
+
+Conforms to the usual Apache I<ErrorLog> directive. Optional.
+
+
+The I<path> element must contain a "trusted" value for PATH (sh-Syntax).
+When B<cimom> calls external programs, it assumes they can be found
+via this PATH.
+
+The I<valparser> element must contain the name of the B<nsgmls> program
+with I<full path> (should be something like I</usr/bin/nsgmls> on
+most machines).
+
+The I<secrets> element must contain a I<user> and a I<password> element;
+their content is needed for CIM authentication. Since those informations
+are given in clear text, we suggest to source out the I<secrets>
+hierarchy into another file with stricter read permissions, and to include
+it in the main configuration via the XML entity mechanism.
+
+The I<httpd.conf> element contains parts of the apache configuration which is
+written to I<ServerRoot>/F<conf/httpd.conf> every time you start B<cimom>.
+(A few lines are added (e.g. Port xyz); see code for details.)
+
+=cut
+
+use Getopt::Long;
+use Carp::Assert;
+use File::Path;
+use File::PathConvert;
+use File::Copy;
+use XML::Simple;
+use English;
+
+
+#
+# Variables for GetOptions():
+#
+my $help;
+my $cleanup = 0;
+my $verbose = 0;
+
+# default config file:
+my $configfile = $EFFECTIVE_USER_ID  ?
+    $ENV{HOME} . '/.cimserver.xml' : '/etc/percimon/cimserver.xml';
+
+
+GetOptions("help"     => \$help,
+	   "file=s"   => \$configfile,
+	   "cleanup"  => \$cleanup,
+	   "verbose"  => \$verbose,
+	  ) || usage();
+
+
+
+my $todo = (scalar @ARGV == 0) ? 'start' : $ARGV[0];
+# (No argument means start)
+
+
+# Convert path to config file to an absolute path. This is done for two
+# reasons:
+# - XML::Simple seems to have a little bug ("-f cimserver.xml" doesn't work,
+#   but "-f ./cimserver.xml" does, although it's in the same directory)
+#
+# - Later in the CIMOM Perl modules, we also want access to the config file.
+#   (This is made possible via the Apache PassEnv directive.)
+#
+$configfile = File::PathConvert::rel2abs($configfile);
+
+
+
+$_ = $todo;
+SWITCH: {
+    if (/^start$/)    { exit (start()   == 0); last; }
+    if (/^stop$/)     { exit (stop()    == 0); last; }
+    if (/^restart$/)  { exit (restart() == 0); last; }
+    if (/^status$/)   { exit (status()  == 0); last; }
+    
+    usage();
+}
+
+
+sub usage {
+    print <<END_USAGE;
+$progname version $VERSION
+Usage: $progname [OPTIONS] [start|stop|restart|status]
+No argument means 'start'.
+
+Options:
+    --help      : list available command line options (this page)
+    --file FILE : specify an alternate config file
+    --cleanup   : removes all created files (only in combination with 'stop') 
+    --verbose   : Increases verbosity 
+
+Options can be used with a single '-' and can be abbreviated.
+END_USAGE
+    exit(0);
+}
+
+
+
+
+# configuration hash returned by XML::Simple
+my $config; 
+
+# For convenience:
+my ($serverroot, $engine,
+    $repository,
+    $libcim, $paula, $sandbox,
+    $pidfile, $errorlog,
+    $user, $password);
+
+
+my $configread = 0;
+
+#
+# Read configuration in $configfile
+#
+# @pre:  -
+# @post: $serverroot, $engine, $libcim, $paula are set,
+#        $configread has true value
+#
+sub common {
+    return if $configread;
+    
+    # slurp in configuration:
+    $config = XMLin($configfile);
+
+    # serverroot is mandatory and must be an absolute path:
+    $serverroot  = $config->{dirs}->{serverroot};
+    defined $serverroot or
+	die "$progname: No <serverroot> found in $configfile\n";
+
+    $serverroot =~ m|^/| or
+	die "$progname: Serverroot must be an absolute path name\n";  
+    
+    # engine is mandatory
+    $engine = $config->{dirs}->{engine};
+    defined $engine or
+	die "$progname: No <engine> found in $configfile\n";
+
+    # repository is mandatory
+    $repository = $config->{dirs}->{repository};
+    defined $repository or
+	die "$progname: No <repository> found in $configfile\n";
+
+    # libcim is optional; missing entry means that a "use CIM::CIM" succeeds
+    # without any search path extension
+    $libcim = (defined $config->{dirs}->{libcim}
+		    ? $config->{dirs}->{libcim}
+		    : "");
+
+    # paula is mandatory (it's never in the standard perl INC search path.) 
+    $paula = $config->{dirs}->{paula};
+    defined $paula or
+	die "$progname: No <paula> found in $configfile\n";
+
+    # sandbox is optional (important for test purposes)
+    $sandbox = $config->{dirs}->{sandbox};
+
+    # $pidfile is optional
+    $pidfile =  (defined $config->{pidfile}
+		     ? $config->{pidfile}
+		     : "$serverroot/logs/cimom.pid");
+    
+    # $errorlog is optional
+    $errorlog =  (defined $config->{errorlog}
+		     ? $config->{errorlog}
+		     : "$serverroot/logs/error_log");
+
+    # the secrets are mandatory
+    $user = $config->{secrets}->{user};
+    defined $user or
+	die "$progname: No <user> found in $configfile\n";
+    
+    $password = $config->{secrets}->{password};
+    defined $password or
+	die "$progname: No <password> found in $configfile\n";
+    
+    $configread = 1;
+}
+
+
+
+
+#
+# Write the apache config file and start apache
+#
+# @pre:  -
+# @post: apache is running as CIMOM :)
+#
+# @returns: a true value iff apache has been successfully started
+#
+sub start {
+    common();
+
+    my $pid = pid();
+    if ($pid) {
+	print "$progname: already running (PID $pid)\n" if $verbose;
+	return 1;
+    }
+
+    # Create ServerRoot dir, if it's not existing:
+    mkpath([$serverroot], 0, 0755);
+    mkpath(["$serverroot/logs"], 0, 0755);
+    mkpath(["$serverroot/conf"], 0, 0755);
+
+    
+    # Copy file mime.types to the conf/ directory:
+    unless (-e "$serverroot/conf/mime.types") {
+	copy("$engine/apache/conf/mime.types",
+	     "$serverroot/conf/mime.types") or
+	    die "$progname: cannot copy mime.types: $!";
+    }
+
+    # create ServerConfigFile for Apache/CIMOM server:
+    my $apache_config = "$serverroot/conf/cimom-engine.conf";
+
+    my $old_umask = umask 0077;
+    open(CONF, "> $apache_config") or
+	die "$progname: cannot open $apache_config for write: $!";
+
+    # Create the Port number line:
+    print CONF "Port\t\t", $config->{port}, "\n";
+
+    print CONF "ErrorLog\t",   $errorlog, "\n";
+    print CONF "PidFile\t\t",  $pidfile, "\n";
+
+
+    # Create User and Group lines if running with root privileges:
+    unless ($EFFECTIVE_USER_ID) {
+	print CONF "User\t\t#$EFFECTIVE_USER_ID\n";
+
+	$_ = $EFFECTIVE_GROUP_ID;
+	# a space-separated list; we want the first entry: 
+	my $egid = (split)[0];
+
+	print CONF "Group\t\t#$egid\n";
+    }
+
+    # append httpd.cond-section literally:
+    print CONF $config->{'httpd.conf'};
+
+
+    # CIMOM location part; prepend a '/' to name if there isn't already one:
+    my $name = $config->{name};
+    $name =~ m|^/| or $name = "/$name";
+    
+    print CONF <<LOCATION_CIMOM;
+<Location $name>
+  PerlInitHandler Apache::StatINC
+
+  AuthName CIM
+  AuthType Basic
+
+  PerlHandler PaulA::CIMOM->handleRequest
+  SetHandler perl-script
+</Location>
+
+PerlSetVar StatINC_Debug 1
+# PerlSetVar StatINC_UndefOnReload On
+
+LOCATION_CIMOM
+    
+    # Pass important config values to the Perl modules:
+
+    print CONF "PerlSetVar\tpath\t" .
+	$config->{path} . "\n";
+
+    print CONF "PerlSetVar\tvalparser\t" .
+	$config->{valparser} . "\n";
+
+    print CONF "PerlSetVar\trepository\t$repository\n";
+
+    print CONF "PerlSetVar\tsandbox\t$sandbox\n" if defined $sandbox;
+
+    print CONF "PerlSetVar\tuser\t\t$user\n";
+    print CONF "PerlSetVar\tpassword\t$password\n";
+
+    close CONF;
+
+    umask $old_umask;
+
+    
+    # create startup file
+    my $startup = "$serverroot/conf/startup.pl";
+    open(START, ">$startup") or
+	die "$progname: cannot open $startup for write: $!";
+
+    print START <<END_STARTUP_PL;
+BEGIN {
+    use lib qw($engine/mod_perl $libcim $paula);
+    use PaulA::CIMOM;
+}
+
+1;
+END_STARTUP_PL
+
+    
+    close START;
+
+    
+    # start apache server
+    my @args;
+    push @args, '-d', $serverroot, '-f', $apache_config;
+
+    system "$engine/apache/bin/cimom-engine", @args;
+
+    my $rc = ($? >> 8);
+
+    if ($verbose) {
+	if ($rc == 0) {
+	    print "$progname: successfully started\n";
+	} else {
+	    print "$progname: start failed\n";
+	}
+    }
+    return ($rc == 0);
+}
+
+
+#
+# Stop apache
+#
+# @pre:  apache is running as CIMOM
+# @post: apache is not running
+#
+# @returns: a true value iff apache has been successfully stopped
+#
+sub stop {
+    common();
+
+    my $pid = pid();
+
+    unless ($pid) {
+	print "$progname: not running\n" if $verbose;
+	return 1;
+    }
+
+    
+    my $cnt = kill 'TERM', $pid;
+
+    # wait until the process really has disappeared.
+    # (otherwise the restart()-Funktion has problems. The server stops,
+    #  but sometimes doesn't start again. A simple "sleep 2" also solves the
+    #  problem, but seems to be "less correct" ;-))
+    while (-e "/proc/$pid") { sleep 1; }
+
+    if ($cleanup) {
+	system("rm -rf $serverroot");
+	($? >> 8) == 0 or
+	    print STDERR "$progname: couldn't remove $serverroot: $!\n";
+    }
+    
+    my $succ = ($cnt == 1);
+    if ($verbose) {
+	if ($succ) {
+	    print "$progname: stopped\n";
+	} else {
+	    print "$progname: couldn't stop; see $errorlog\n";
+	}
+    }
+    return $succ;
+}
+
+
+
+sub restart {
+    stop() != 0 or return 0;
+    start();
+}
+
+
+#
+# Determines whether cimom is running.
+# If so, print the PID to stdout.
+#
+# @returns: a true value iff apache is running
+#
+sub status {
+    common();
+
+    my $pid = pid();
+
+    if ($pid) {
+	if ($verbose) {
+	    print "$progname: running (PID $pid)\n";
+	} else {
+	    print "$pid\n";
+	}
+	return 1;
+    } else {
+	print "$progname: not running\n" if $verbose;
+    }
+
+    return 0;
+}
+
+
+#
+# Determine process id of a running cimom
+# Removes stale pidfile on the fly if needed.
+#
+# @pre:  common() has been called
+# @post: No stale pidfile exists
+#
+# @returns: pid of running cimom, or zero, if no cimom is running.
+#
+sub pid {
+    # No pidfile <=> no cimom running:
+    -e $pidfile or return 0;
+
+    assert(-r $pidfile);
+
+    open PID, $pidfile;
+    my $pid = <PID>; chomp $pid;
+    close PID;
+
+
+    # look into the /proc-file-system to determine whether this pid is an
+    # active httpd process:
+    if (open(CMD, "/proc/$pid/cmdline")) {
+	my $cmdline = <CMD>;
+	close CMD;
+	
+	return $pid  if $cmdline =~ /cimom-engine/; 
+    } else {
+	unlink("$serverroot/logs/httpd.pid");
+	return 0;
+    }
+}
+
+
+=head1 SEE ALSO
+
+L<httpd>
+
+=head1 AUTHOR
+
+ Axel Miesen <miesen@ID-PRO.de>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+
+=cut
+    

@@ -1,0 +1,6 @@
+
+foo.org      :[gateway.foo.org]
+.foo.org     :[gateway.foo.org]
+bar.org      :[gateway.bar.org]
+.bar.org     :[gateway.bar.org]
+

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+fetchmail -f files/fetchmailrc
+

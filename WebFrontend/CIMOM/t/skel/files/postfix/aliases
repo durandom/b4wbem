@@ -1,0 +1,7 @@
+# a postfix alias file
+
+root:	    lluke
+postmaster: lluke
+faxmaster:  mmouse
+fax_default: bbunny
+

@@ -1,0 +1,112 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY passwd          "files/passwd"           >
+<!ENTITY group           "files/group"            >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+
+  <!-- *************** -->
+  <PROPERTY ID="Signature"
+	    MIGHT_BE_NULL="true">
+    <IN HANDLE="signature">
+    </IN>
+    <OUT HANDLE="signature">
+      <FUNCTION/>
+    </OUT>
+  </PROPERTY>
+
+  <!-- ****************** -->
+  <PROPERTY ID="MailAddress">
+    <IN HANDLE="dummy">
+      <FUNCTION/>
+    </IN>
+  </PROPERTY>
+  
+  <!-- ******************* -->
+  <PROPERTY ID="SystemGroups">
+    <INOUT HANDLE="group">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+
+
+  <!-- ********************* -->
+  <!-- **** KEYBINDINGS **** -->
+  <!-- ********************* -->
+
+  <KEYBINDINGS>
+    <IN HANDLE="passwd">
+    </IN>
+  </KEYBINDINGS>
+
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+  <SECTION ID="s1">
+    <REGEXP MODIFIERS="ms">(.*)^($KEY_Login:.+?)$(.*)</REGEXP>
+    <ERROR_NOT_FOUND CODE="6"/>
+  </SECTION>
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+  <HANDLE ID="passwd"         NO="1"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&passwd;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="signature"      NO="2"      TYPE="FILE"        ACCESS="RW">
+    <ERROR ONREAD="false"/>
+    <PERMISSIONS UMASK="0600" />
+  </HANDLE>
+
+  <HANDLE ID="group"          NO="3"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&group;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+  
+  <HANDLE ID="dummy"          NO="4"     TYPE="DUMMY"       ACCESS="RW">
+  </HANDLE>
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

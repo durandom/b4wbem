@@ -1,0 +1,155 @@
+<!-- ******************************************************************* -->
+<!--                                                                     -->
+<!-- This DTD defines the syntax for Tree XML 1.0 documents              -->
+<!--                                                                     -->
+<!-- DTD Version: 1.3                                                    -->
+<!-- Date:        Aug 4 2000                                             -->
+<!--                                                                     -->
+<!-- ******************************************************************* -->
+
+
+<!-- Definition von externen Referenzen (Entities) -->
+
+
+
+<!-- Definition von internen Referenzen (Entities) -->
+
+<!ENTITY	% defAttr	'label CDATA #REQUIRED
+				name NMTOKEN #REQUIRED
+				cimproperty NMTOKEN #REQUIRED'>
+
+
+
+
+
+<!-- Definition der Elemente dieser DTD und ihrer Attribute -->
+
+
+<!ELEMENT paula ( node, form* )>
+
+
+
+	<!-- Die Knotenstruktur fuer das Menue -->
+
+<!ELEMENT	node ( node )* >
+<!ATTLIST	node
+		label CDATA #REQUIRED
+	        name CDATA #REQUIRED>
+
+
+	<!-- Elemente der Formulare -->
+
+<!ELEMENT	form		( docs, components, actions )>
+<!ATTLIST	form
+		name ID #REQUIRED>
+
+<!ELEMENT	docs		( title, description, help )>
+
+<!ELEMENT	title		( #PCDATA )>
+<!ELEMENT	description	( #PCDATA )>
+<!ELEMENT	help		( #PCDATA )>
+
+
+<!ELEMENT	actions		( cimget, cimset, submit, action* )>
+
+<!ELEMENT	cimget		( #PCDATA )>
+<!ATTLIST	cimget
+		src NMTOKEN #REQUIRED>
+<!ELEMENT	cimset		( #PCDATA )>
+<!ATTLIST	cimset
+		src NMTOKEN #REQUIRED>
+<!ELEMENT	submit		EMPTY>
+<!ATTLIST	submit
+		label CDATA #REQUIRED
+		name NMTOKEN #REQUIRED
+		method CDATA #REQUIRED>
+<!ELEMENT	action		EMPTY>
+<!ATTLIST	action
+		label CDATA #REQUIRED
+		name NMTOKEN #REQUIRED
+		method CDATA #REQUIRED>
+
+
+
+<!ELEMENT	components	( text | inputfield | inputarea | password | inputtime |inputvalue |
+				  singleselect | multipleselect | boolselect |
+				  editlist | editIPlist | editMACIPlist |
+				  exchangelist | hiddenfield |
+				  inputIP
+				)* >
+
+<!ELEMENT	text		( #PCDATA )>
+
+<!ELEMENT	inputfield	( #PCDATA )>
+<!ATTLIST	inputfield
+		%defAttr;>
+
+<!ELEMENT	inputarea	( #PCDATA )>
+<!ATTLIST	inputarea
+		%defAttr;>
+
+<!ELEMENT	password	EMPTY>
+<!ATTLIST	password
+		%defAttr;>
+
+<!ELEMENT	inputtime	( #PCDATA )>
+<!ATTLIST	inputtime
+		%defAttr;>
+
+<!ELEMENT	inputvalue	( #PCDATA )>
+<!ATTLIST	inputvalue
+		%defAttr;>
+
+
+<!ELEMENT	singleselect	( default?,choice* )>
+<!ATTLIST	singleselect
+		%defAttr;>
+
+<!ELEMENT	multipleselect	( default*, choice* )>
+<!ATTLIST	multipleselect
+		%defAttr;>
+
+<!ELEMENT	boolselect	EMPTY>
+<!ATTLIST	boolselect
+		%defAttr;
+		value CDATA #REQUIRED>
+
+<!ELEMENT	default		(#PCDATA)>
+<!ATTLIST	default
+		value CDATA #REQUIRED>
+
+<!ELEMENT	choice		(#PCDATA)>
+<!ATTLIST	choice
+		value CDATA #REQUIRED>
+
+
+<!ELEMENT	list		( member* )>
+<!ATTLIST	list
+		%defAttr;>
+
+<!ELEMENT	member		( #PCDATA )>
+
+<!ELEMENT	editlist	( list )>
+<!ATTLIST	editlist
+		%defAttr;>
+
+<!ELEMENT	editIPlist	( list )>
+<!ATTLIST	editIPlist
+		%defAttr;>
+
+<!ELEMENT	editMACIPlist	( list )>
+<!ATTLIST	editMACIPlist
+		%defAttr;>
+
+<!ELEMENT	exchangelist	( list, list )>
+<!ATTLIST	exchangelist
+		%defAttr;>
+
+<!ELEMENT	inputIP		( #PCDATA )>
+<!ATTLIST	inputIP
+		%defAttr;>
+
+<!ELEMENT	hiddenfield	EMPTY>
+<!ATTLIST	hiddenfield
+		name CDATA #REQUIRED
+		value CDATA #REQUIRED>

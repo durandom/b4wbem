@@ -1,0 +1,213 @@
+# **********************************************************************
+# Refer to the XF86Config(4/5) man page for details about the format of 
+# this file.
+# **********************************************************************
+
+# **********************************************************************
+# Files section.  This allows default font and rgb paths to be set
+# **********************************************************************
+
+Section "Files"
+
+# The location of the RGB database.  Note, this is the name of the
+# file minus the extension (like ".txt" or ".db").  There is normally
+# no need to change the default.
+
+    RgbPath	"/usr/X11R6/lib/X11/rgb"
+
+# Multiple FontPath entries are allowed (they are concatenated together)
+# By default, Red Hat 6.0 and later now use a font server independent of
+# the X server to render fonts.
+
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi"
+    FontPath   "/usr/X11R6/lib/X11/fonts/misc"
+    FontPath   "unix/:-1"
+    FontPath   "tcp/xfs-2:7100,tcp/xfs-2:7101"
+
+EndSection
+
+# **********************************************************************
+# Server flags section.
+# **********************************************************************
+
+Section "ServerFlags"
+
+    # Uncomment this to cause a core dump at the spot where a signal is 
+    # received.  This may leave the console in an unusable state, but may
+    # provide a better stack trace in the core dump to aid in debugging
+    #NoTrapSignals
+
+    # Uncomment this to disable the <Crtl><Alt><BS> server abort sequence
+    # This allows clients to receive this key event.
+    #DontZap
+
+    # Uncomment this to disable the <Crtl><Alt><KP_+>/<KP_-> mode switching
+    # sequences.  This allows clients to receive these key events.
+    #DontZoom
+
+EndSection
+
+# **********************************************************************
+# Keyboard section
+# **********************************************************************
+
+Section "Keyboard"
+
+    AutoRepeat	500 5
+
+#   Protocol # test comment
+# "Standard" # another comment
+   Protocol "Standard" # foo
+
+    XkbModel	"pc102"
+
+    XkbLayout	"de"
+    XkbVariant	"nodeadkeys"
+
+EndSection
+
+# **********************************************************************
+# Pointer section
+# **********************************************************************
+
+Section "Pointer"
+    Protocol    "PS/2"
+    Device      "/dev/mouse"
+
+# When using XQUEUE, comment out the above two lines, and uncomment
+# the following line.
+
+#    Protocol	"Xqueue"
+
+# Baudrate and SampleRate are only for some Logitech mice
+
+#    BaudRate	9600
+#    SampleRate	150
+
+# Emulate3Buttons is an option for 2-button Microsoft mice
+# Emulate3Timeout is the timeout in milliseconds (default is 50ms)
+
+     Emulate3Buttons
+#    Emulate3Timeout    50
+
+# ChordMiddle is an option for some 3-button Logitech mice
+
+#    ChordMiddle
+
+EndSection
+
+
+# **********************************************************************
+# Monitor section
+# **********************************************************************
+
+# Any number of monitor sections may be present
+
+Section "Monitor"
+
+    Identifier  "My Monitor"
+    VendorName  "Unknown"
+    ModelName   "Unknown"
+
+# HorizSync is in kHz unless units are specified.
+# HorizSync may be a comma separated list of discrete values, or a
+# comma separated list of ranges of values.
+
+    HorizSync   31.5 - 79.0
+
+# VertRefresh is in Hz unless units are specified.
+# VertRefresh may be a comma separated list of discrete values, or a
+# comma separated list of ranges of values.
+
+    VertRefresh 40-150
+
+# Modes can be specified in two formats.  A compact one-line format, or
+# a multi-line format.
+
+#    ModeLine "1024x768i" 45 1024 1048 1208 1264 768 776 784 817 Interlace
+
+#    Mode "1024x768i"
+#        DotClock	45
+#        HTimings	1024 1048 1208 1264
+#        VTimings	768 776 784 817
+#        Flags		"Interlace"
+#    EndMode
+
+# 640x400 @ 70 Hz, 31.5 kHz hsync
+Modeline "640x400"     25.175 640  664  760  800   400  409  411  450
+# 640x480 @ 60 Hz, 31.5 kHz hsync
+Modeline "640x480"     25.175 640  664  760  800   480  491  493  525
+# 800x600 @ 56 Hz, 35.15 kHz hsync
+ModeLine "800x600"     36     800  824  896 1024   600  601  603  625
+# 1024x768 @ 87 Hz interlaced, 35.5 kHz hsync
+Modeline "1024x768"    44.9  1024 1048 1208 1264   768  776  784  817 Interlace
+
+EndSection
+
+
+# **********************************************************************
+# Graphics device section
+# **********************************************************************
+
+# Any number of graphics device sections may be present
+
+Section "Device"
+    Identifier        "Generic VGA"
+    VendorName        "Unknown"
+    BoardName "Unknown"
+    Chipset   "generic"
+	
+    Option "power_saver"
+
+#    VideoRam 256
+
+#    Clocks   25.2 28.3
+
+EndSection
+
+# Device configured by Xconfigurator:
+
+Section "Device"
+    Identifier  "My Video Card"
+    VendorName  "Unknown"
+    BoardName   "Unknown"
+    #VideoRam    8192
+    # Insert Clocks lines here if appropriate
+EndSection
+
+
+# **********************************************************************
+# Screen sections
+# **********************************************************************
+
+# The Colour SVGA server
+
+Section "Screen"
+    Driver      "svga"
+    Device      "Generic VGA"
+    #Device      "My Video Card"
+    Monitor     "My Monitor"
+    Subsection "Display"
+        Depth       8
+        #Modes       (null)
+        ViewPort    0 0
+    EndSubsection
+EndSection
+
+# The 16-color VGA server
+
+Section "Screen"
+    Driver      "vga16"
+    Device      "Generic VGA"
+    Monitor     "My Monitor"
+
+    BlankTime   10  # Die xautolock-time von 5 Minuten addiert sich dazu
+    StandbyTime 10
+    OffTime     25
+
+    Subsection "Display"
+        Modes       "640x480" "800x600"
+        ViewPort    0 0
+    EndSubsection
+EndSection

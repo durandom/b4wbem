@@ -1,0 +1,815 @@
+\documentclass[11pt]{article}
+
+\usepackage{a4,german,isolatin1}
+
+\parindent0cm
+\parskip2mm
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Einführung}
+
+%%%%%%%%%%%%%%%%%%%%
+%\subsection{Was ist ein ``Provider''?}
+
+Unter dem Begriff ``Provider'' verstehen wir ein Perl-Modul, das
+Eigenschaften eines Linux-Systems auslesen und verändern kann. Dabei
+gehört ein Provider zu einer  CIM-Klasse, die Eigenschaften entsprechen
+den Properties dieser Klasse.
+
+{\em
+Beispielsweise gibt es die CIM-Klasse {\em PaulA\_User}, die
+benutzerbezogene Daten verwaltet mit den Properties {\tt LoginShell} für
+die Login-Shell oder {\tt RealName} für den Real-Namen eines Benutzers.
+}
+
+Jeder Provider ist abgeleitet von der Basisklasse {\tt
+lib/PaulA/Provider.pm} und liegt in einem Unterverzeichnis des
+Verzeichnis {\tt lib/PaulA/Provider/}. Der ``Vorname'' des Perl-Modul
+ist der selbe wie wie die zugehörige Klasse (Endung {\tt .pl}).  Zum
+Modul gehört noch eine  XML-Konfigurationsdatei, die im gleichen
+Verzeichnis liegt. Der Name dieser XML-Datei ist angelehnt an den des
+perl-Moduls, nur mit der Endung {\tt .xml}.
+
+{\em
+Der oben genannte Provider für die Klasse {\tt PaulA\_User} heißt also
+{\tt PaulA\_User.pm}, dessen Kinfigurationsdatei ist {\tt
+PaulA\_User.xml}.
+}
+
+Mit Hilfe von CIM-Anfragen (sogenannten ``Intrinsic Methods'') werden
+diese System-Eigenschaften verwaltet. Momentan werden folgende
+unterstützt
+
+\begin{itemize}
+\item {\tt GetProperty} \\
+liest eine bestimmte Eigenschaft (einer angegebenen Klasse)
+\item {\tt GetInstance} \\
+liest mehrere Eigenschaften (einer angegebenen Klasse)
+\item {\tt SetProperty} \\
+setzt eine bestimmte Eigenschaft (einer angegebenen Klasse)
+\item {\tt ModifyInstance} \\
+setzt mehrere Eigenschaften (einer angegebenen Klasse)
+\item {\tt EnumerateInstanceNames} \\
+liefert die Namen (``Keybindings'') aller Instanzen der angegebenen Klasse
+\end{itemize}
+
+Jede dieser Anfragen wird für einen bestimmten Namensraum
+(``Namespace'') gestellt. Damit ist es möglich, daß eine Klasse mit
+gleichem Namen mehrfach existiert, dies dann in jeweils verschiedenen
+Namensräumen. Entsprechend werden die Perl-Module der Provider in
+unterschiedlichen Verzeichnissen abgelegt, wobei der Name des
+Verzeichnisses dem des Namensraum entspricht.
+
+{\em
+Für die Test-Umgebung verwenden die Perl-t-Tests den Namensraum {\tt
+test}, dementsprechend befinden sich die Provider (samt
+Konfigurationsdateien) in {\tt lib/PaulA/Provider/test/}.
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Allgemeine Begriffe}
+
+Im folgenden werden wichtige Begriffe erklärt, die zum Verstehen und
+Schreiben von Providern wichtig sind.
+
+%%%%%%%%%%%%%%%%%%%%
+\subsection{Handles}
+
+Unter einem Handle versteht man einen Dienst, der Informationen
+aus dem System liefert oder mit dem man Informationen ins System
+schreiben kann. Das kann entweder eine Datei oder ein Programm(-aufruf)
+sein. Die Informationen, die von einem Handle kommen oder mit einem Handle
+verarbeitet werden, sind im allgemeinen ASCII-Daten.
+
+Beispiele: 
+
+\begin{itemize}
+\item die Datei {\tt /etc/passwd}
+\item das Programm {\tt ifconfig}
+\end{itemize}
+
+Ein Handle hat unter anderem folgende Eigenschaften:
+
+\begin{itemize}
+\item Typ: zum Beispiel File-Handle oder Programmaufruf?
+\item Zugriff: read-only, write-only oder read-write?
+\item Name: der Datei bzw. des Programms (letzteres ggf. auch mit
+Kommandozeilenargumenten)
+\item Definition eines Whitespaces
+\item Definition von Kommentaren (lesend und schreibend)
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%
+\subsection{Sections}
+
+Die Informationen eines Handles bestehen eigentlich immer aus logischen
+Einheiten, die Sektionen genannt werden. Wenn man eine Systemdatei
+editiert, geht ein User meist so vor, daß er erst eine bestimmte
+Sektion sucht und danach in dieser Sektion die Stelle, die er ändern
+will.
+
+Beispiele:
+
+\begin{itemize}
+\item {\tt /etc/X11/XF86config}\par
+Hier gibt es direkte gleichnamige Entsprechungen, z.B. die beiden {\tt Section
+"{}Keyboard"{}} oder die {\tt Section "{}Pointer"{}}. Identifiziert wird
+sie damit, daß sie mit den String {\tt Section} anfängt und danach in
+Anführungszeichen das Schlüsselwort folgt.
+
+\item {\tt /etc/passwd}\par
+Hier ist eine logische Einheit eine einzelne Zeile. Die Identifikation
+einer Sektion geht über den Usernamen am Zeilenanfang mit einem
+Doppelpunkt danach.
+\end{itemize}
+
+Eine Section hat hauptsächlich folgende Eigenschaft:
+
+\begin{itemize}
+\item Erkennungs-Muster (bezüglich der Ein-/Ausgabe eines Handles)
+\end{itemize}
+
+Es ist in einem konkreten Fall nicht immer klar, welchen Teil der Daten
+man als ``Sektion'' auffassen sollte. Das ergibt sich immer erst, wenn
+man mit den Daten arbeitet.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Properties}
+
+Eine Property ist im Grunde das kleinste Atom, ein bestimmter Wert, den
+man aus einem System herausziehen will.
+
+Beispiele:
+\begin{itemize}
+\item die Login-Shell eines Users
+\item der Realname einer Person
+\item die IP-Adresse eines Rechners
+\end{itemize}
+
+Eine Property hat unter anderem folgende Eigenschaften:
+
+\begin{itemize}
+\item von welchen Handles gelesen und in welche Handles geschrieben
+werden soll
+\item welche Sektionen ggf. in den Handles genommen werden sollen
+\item evtl. ein Erkennungs-Muster (bezüglich einer Section eines Handles)
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%
+\subsection{Klasse}
+
+Eine Klasse ist eine (mehr oder weniger) sinnvolle Zusammenenfassung von
+Properties.
+
+Beispiele:
+
+\begin{itemize}
+\item {\tt PaulA\_User} \\ ist für einen potentiellen User zuständig mit
+Properties wie {\tt LoginShell}, {\tt RealName}, \ldots
+\item {\tt PaulA\_System} \\ repräsentiert einen beliebigen
+Rechner. Properties wären hier beispielsweise {\tt ValidShells} für alle
+gültigen Login-Shells, {\tt IPAddress} für seine IP-Adresse.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%
+\subsection{Provider}
+
+Unter einem Provider schließlich versteht man eine Anbindung an PaulA,
+die Properties aus dem System einließt. Jeder Provider wird genau einer
+Klasse zugeordnet, d.h. er kann nur die Informationen aus dem System
+lesen, die zur Klasse passen. 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Grundsätzliche Vorgehensweise eines Providers}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\ldots beim Beschaffen von Informationen}
+
+{\bf Input:} welche Properties gelesen werden sollen
+\begin{enumerate}
+\item der Reihe nach werden alle Handles, die zu diesen Properties
+gehörigen Handles geöffnet und bearbeitet (Zeitersparnis)
+\item Entfernen aller Kommentare (pro Handle-Output)
+\item Lesen der Property, indem erst die Section gesucht wird, und dann
+innerhalb der Section die Property ausgelesen wird
+\item evtl. Vergleich der eingelesenen Werte (falls eine Property mehr
+als einmal ausgelesen wird)
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\ldots beim Schreiben von Informationen}
+
+{\bf Input:} welche Properties geschrieben werden sollen mit den
+entsprechenden Werten
+\begin{enumerate}
+\item alle Properties werden gelesen (dabei evtl. Fehlermeldungen, wenn
+was schief ging)
+\item wie beim Lesen werden alle benötigten Handles der Reihe nach
+bearbeitet und geschrieben
+\item Erkennen der Stelle, wo jeweils die Property steht (innerhalb der
+Section eines Handles) und Ersetzen des alten Wertes durch den neuen
+\item falls ein Fehler auftrat, alle Änderungen wieder rückgängig machen
+\end{enumerate}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Entwickeln eines Providers}
+
+
+Zu jedem Provider gibt es drei Dateien:
+
+\begin{itemize}
+\item die Klassenspezifikation in XML (Prefix {\tt C-}, Endung {\tt .xml}), 
+\item das Perl-Modul (Endung {\tt .pm}) und
+\item die Konfigurationsdatei in XML (Endung {\tt .xml}).
+\end{itemize}
+Der (abgesehen vom Prefix der Klassendatei) gemeinsame "`Vorname"' der
+Dateien ist die der entsprechenden Klasse (z.B. {\tt PaulA\_User}).
+
+Die Klassenspezifikation liegt im sogenannten {\em Repository}, der Rest
+nebeneinander in einem Provider-Verzeichnis.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Die Klassenspezifikation}
+
+Im Idealfall existiert diese Klasse schon, braucht also nicht selbst
+geschrieben zu werden. Sie gibt an, welche Properties die Klasse zu
+bieten hat, ob diese einen skalaren ({\tt PROPERTY}) oder Array-Kontext
+({\tt PROPERTY.ARRAY}) haben, welchen Typ die Properties haben
+(z.B. {\tt string}, {\tt boolean}, {\tt real32}, \ldots) und was die
+Key-Properties sind (zu erkennen am {\tt QUALIFIER NAME="{}key"{}}).
+
+Eine Beispiel für eine minimale Klassen-Datei ist:
+
+\begin{verbatim}
+<CLASS NAME="PaulA_User">
+
+  <PROPERTY NAME="Password" TYPE="string" />
+  <PROPERTY NAME="LoginShell" TYPE="string" />
+  <PROPERTY NAME="RealName" TYPE="string" />
+  <PROPERTY NAME="Signature" TYPE="string" />
+  <PROPERTY.ARRAY NAME="DistributionLists" TYPE="string" />
+
+  <PROPERTY NAME="Login" TYPE="string">
+    <QUALIFIER NAME="key" TYPE="boolean">
+      <VALUE>TRUE</VALUE>
+    </QUALIFIER>
+  </PROPERTY>
+
+</CLASS>
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Das Perl-Modul}
+
+Das Modul kann im Idealfall mehr oder weniger leer sein, d.h. man
+braucht nur soviel wie nötig zu programmieren. Das Grundgerüst besteht
+aus folgenden Zeilen, die im Wesentlichen nur angeben, welche Klasse der
+Provider repräsentieren soll (hier {\tt PaulA\_User}).
+
+\begin{verbatim}
+   package PaulA::Provider::PaulA::PaulA_User;
+
+   use base qw(PaulA::Provider);
+
+   sub new {
+       my ($class, %args) = @_;
+       my $self = $class->SUPER::new(%args);
+       return $self;
+   }
+
+   1;
+\end{verbatim}
+
+Die meisten Informationen zu einem Provider spezifiziert man in der
+Konfigurationsdatei. Natürlich wird man nicht herumkommen, auch etwas zu
+programmieren. In diesem Fall können auch weitere Perl-Funktionen im
+Perl-Modul stehen. Diese haben alle in etwa den gleichen Aufbau: Sie
+beginnen mit einem beschreibenden Prefix (was die Funktion tun soll)
+und einem Suffix (dem Namen der Property).
+
+Zwei Funktionen-Typen sind für die Transformation von System-Darstellung
+nach Perl-Darstellung (und umgekehrt) wichtig, die sich durchaus
+unterscheiden können. Dabei handelt es sich um die Funktionen
+{\tt system2perl\_{\em PropertyName}()} und
+{\tt perl2system\_{\em PropertyName}()}. Wichtig sind sie zum
+Beispiel, wenn der Property-Wert ein Array ist, im System diese aber nur
+als einzelner String abgespeichert wird (z.B. {\tt /etc/shells}). Die
+Funktionen werden -- sofern im Perl-Modul definiert -- automatisch
+aufgerufen.
+
+Input bei {\tt system2perl\_*()} ist ein String, Output entweder ein
+Skalar oder eine Array-Referenz. Bei {\tt perl2system\_*()} ist e genau
+umgekehrt.
+
+\begin{verbatim}
+   sub system2perl_ValidShells {
+       my ($self, $val) = @_;
+       my @list = split /\n/, $val;
+       return \@list;
+   }
+
+   sub perl2system_ValidShells {
+       my ($self, $listref) = @_;
+       return join("\n", @$listref) . "\n";
+   }
+\end{verbatim}
+
+Ein weiterer Funktionstyp ist {\tt isValid\_{\em PropertyName}()}. Eine
+solche Funktion wird (sofern definiert) vor der {\tt
+perl2system}-Transformation aufgerufen, um zu überprüfen, ob alle
+gegebenen Werte gültig sind.
+
+\begin{verbatim}
+   sub isValid_ValidShells {
+       my ($self, $listref) = @_;
+       foreach (@$listref) {
+           unless (-x $_) {
+               print "  (Not an executable file: $_)\n";
+               return 0;
+           }
+       }
+       return 1;
+   }
+\end{verbatim}
+
+
+Es kann noch weitere Funktionen geben. Diese werden später an den
+entsprechenden Stellen im nächsten Unterkapitel erklärt.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Die Konfigurationsdatei}
+
+Die Konfigurationsdatei ist ein XML-Dokument besteht und (zur Zeit) aus
+drei Einheiten für Properties, Sections und Handles, die innerhalb eines
+umgebenden {\tt CIM}-Blocks stehen:
+
+\begin{verbatim}
+   <CIM>
+     ...
+   </CIM>
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Der {\tt PROPERTY}-Block}
+
+Für jede Property gibt es einen eigenen Eintrag {\tt PROPERTY}. Der Name
+der Property wird mit dem Attribut {\tt ID} angegeben.
+
+\begin{verbatim}
+   <PROPERTY ID="LoginShell">
+\end{verbatim}
+
+Jede Property kann mehrere Unterblöcke haben, die beschreiben, woher die
+Informationen gelesen oder geschrieben werden können: {\tt IN} für
+read-only, {\tt OUT} für write-only und {\tt INOUT} für read-write.
+
+Jeder {\tt IN/OUT/INOUT}-Block hat das optionale Argument {\tt SECTION},
+mit dem auf eine Section referenziert wird und ein zwingendes Argument
+{\tt HANDLE}, das die Handle-ID angibt. Wirk keine SECTION angegeben,
+wird die Default-Section angenommen (siehe entsprechendes Unterkapitel).
+
+\begin{verbatim}
+   <IN SECTION="user" HANDLE="passwd">
+\end{verbatim}
+
+Als erster Unterblock von {\tt IN/OUT/INOUT} wird die Erscheinungsart
+der Property angegeben. Das kann zur Zeit eines der folgenden XML-Tags
+sein: {\tt FLAG}, {\tt REQUIRED\_ASSIGNMENT} oder
+{\tt OPTIONAL\_ASSIGNMENT}.
+
+\begin{enumerate}
+
+%%%% FLAG
+\item Eine Property ist ein {\tt FLAG}, wenn sie folgende Eigenschaften
+erfüllt:
+
+\begin{itemize}
+\item Sie hat nur zwei Zustände (z.B. '0' und '1').
+\item Ein Zustand wird erreicht, wenn ein Schlüsselwort vorhanden ist,
+der andere Wert, wenn nicht.
+\end{itemize}
+
+Die folgenden beschreibenden Attribute sind dafür zuständig:
+
+\begin{itemize}
+\item {\tt DEFAULT} (zwingend)\\
+Der Wert, wenn das Schlüsselwort {\em nicht} vorhanden ist.
+\item {\tt VALUE} (zwingend)\\
+Der Wert, wenn das Schlüsselwort vorhanden ist.
+\item {\tt TEXT} (zwingend)\\
+Der Text, der geschrieben wird, wenn die Property den {\tt VALUE}-Wert
+hat. (Wenn nicht, wird ja gelöscht.) 
+\end{itemize}
+
+\begin{verbatim}
+   <FLAG DEFAULT="0"
+         VALUE="1"
+         TEXT="\tEmulate3Buttons\n" />
+\end{verbatim}
+
+%%%% REQUIRED_ASSIGNMENT
+\item Eine Property ist ein {\tt REQUIRED\_ASSIGNMENT}, wenn sie
+folgende Eigenschaft erfüllt:
+
+\begin{itemize}
+\item Sie ist {\em immer} "`in gleicher Weise"' im Handle-Output zu
+finden, kann also nicht einmal fehlen und einmal vorhanden sein.
+\item Der Wert der Property ist direkt auslesbar und muß nicht wie bei
+{\tt FLAG} "`interpretiert"' werden.
+\end{itemize}
+
+Hierfür sind keine weiteren Attribute vorgesehen.
+
+\begin{verbatim}
+   <REQUIRED_ASSIGNMENT />
+\end{verbatim}
+
+%%%% OPTIONAL_ASSIGNMENT
+\item Eine Property ist ein {\tt OPTIONAL\_ASSIGNMENT}, wenn sie
+folgende Eigenschaften erfüllt:
+
+\begin{itemize}
+\item Wie ein {\tt REQUIRED\_ASSIGNMENT}, nur daß die Anweisung auch
+nicht vorkommen kann. 
+\end{itemize}
+
+Die folgenden beschreibenden Attribute sind dafür zuständig:
+
+\begin{itemize}
+\item {\tt DEFAULT} (zwingend)\\
+Der Wert, wenn die Anweisung {\em nicht} vorhanden ist.
+\item {\tt TEXT}  (zwingend) \\
+Der Text, der geschrieben wird. Dabei verwendet man den (fiktiven)
+Platzhalter {\tt \$VAR}, um den Wert der Property anzugeben.
+\item {\tt DELETE\_IF\_DEFAULT} (optional) \\
+Kann den Wert {\tt true} oder {\tt false} (=default)
+haben. Charakterisiert, ob die Anweisung beim Schreiben des
+{\tt DEFAULT}-Wertes gelöscht werden soll oder nicht.
+\end{itemize}
+
+\begin{verbatim}
+   <OPTIONAL_ASSIGNMENT DEFAULT="default"
+                        TEXT="\tProtocol=&quot;$VAR&quot;\n"
+                        DELETE_IF_DEFAULT="true" />
+\end{verbatim}
+
+\end{enumerate}
+
+Der zweite {\tt IN/OUT/INOUT}-Unterblock beschreibt die Art und Weise,
+wie die Property aus der Section gelesen wird. Hier kommt eines der
+folgenden XML-Tags in Frage:
+
+\begin{enumerate}
+
+%%%% REGEXP
+\item Bei {\tt REGEXP} mappt man die Property mit Hilfe einer
+(Perl-)Regular-Expres\-sion.
+
+Momentan ist nur ein optionales Attribut möglich: {\tt MODIFIERS}.
+Dieses verwendet Perl als Modifier zum Mappen der RegExp. Mögliche Werte
+sind \\
+"`{\tt m}"' ("`{\tt \^{}}"' und "`{\tt \$}"' prüfen "`{\tt $\setminus$n}"')\\
+"`{\tt s}"' ("`{\tt .}"' prüfen "`{\tt $\setminus$n}"') und\\
+"`{\tt i}"' (Groß- und Kleinschreibung egal).\\
+Wird kein Modifier angegeben, wird "`{\tt s}"' als Default-Wert
+angenommen. Man kann auch verschiedene Modifier kummulieren.
+
+Bei der Spezifikation der RegExp ist zu beachten, daß sie entweder drei
+oder vier runde Klammerpaare besitzt, die insgesamt die ganze Section
+erfassen. Ob drei oder vier Klammerpaare, hängt von der Erscheinungsart
+der Property ab:
+
+\begin{itemize}
+\item {\tt FLAG}: drei Klammerpaare.\\
+Die mittlere Klammer umfaßt den Text, der beim Schreiben des
+{\tt DEFAULT}-Wertes gelöscht wird. 
+
+\begin{verbatim}
+   <REGEXP>(.*\s)(Emulate3Buttons)(\s.*)</REGEXP>
+\end{verbatim}
+
+\item {\tt REQUIRED\_ASSIGNMENT}: drei Klammerpaare.\\
+Die mittlere Klammer umfaßt den eigentlichen Wert der Property, der
+beim Schreiben des Wertes ersetzt wird. 
+
+\begin{verbatim}
+   <REGEXP>(.*Device\s+")(.+?)(".*)</REGEXP>
+\end{verbatim}
+
+\item {\tt OPTIONAL\_ASSIGNMENT}: vier Klammerpaare.\\
+Hier gibt es im mittleren Klammerpaar ein viertes. Die mittlere Klammer
+umfaßt den Text, der beim Schreiben des {\tt DEFAULT}-Wertes gelöscht
+wird. Die Klammer in der mittleren umgibt den Property-Wert, um ggf. nur
+ihn zu ersetzen.
+
+\begin{verbatim}
+   <REGEXP>(.*\s)(Protocol\s+"(.*?)")(\s.*)</REGEXP>
+\end{verbatim}
+
+\end{itemize}
+
+{\tt REGEXP} kann angewendet werden, wenn die zugehörigen Handles
+lesender Natur sind oder bei schreibenden {\tt FILE}-Handles
+(d.h. Dateien bearbeiten).
+
+
+%%%% FUNCTION
+\item Mit {\tt FUNCTION} zeigt man an, daß zum Auslesen der Property aus
+der Section eine selbstgeschriebene Perl-Funktion verantwortlich
+ist. Der Name dieser Funktion kann nicht explizit angegeben werden, er
+wird automatisch ermittelt ("`{\tt readProperty\_}"', gefolgt mit dem
+Namen der Property).
+
+
+\begin{verbatim}
+   <FUNCTION />
+\end{verbatim}
+
+Im Perl-Modul muß dann eine Funktion geschrieben werden wie etwa
+
+\begin{verbatim}
+sub readProperty_LoginShell {
+    my ($self, $section) = @_;
+    my @a = split ':', $section;
+    return (defined $a[6] ? $a[6] : "");
+}
+\end{verbatim}
+
+Diese Funktion hat als Input die Section (als String) und muß ebenfalls
+einen String (den Property-Wert) zurückliefern.
+
+{\tt FUNCTION} ist bei lesenden Handles möglich.
+
+
+%%%% INTERNAL
+\item Bei {\tt INTERNAL} wird zwar auch Perl-Code angegeben, der aber
+direkt in der XML-Datei. Manchmal kann das nämlich einfacher sein, als
+eine RegExp anzugeben.
+
+\begin{verbatim}
+   <INTERNAL>(split ':')[4]</INTERNAL>
+\end{verbatim}
+
+In- und Output dieses Perl-Codes ist in beiden Fällen "`{\tt \$\_}"'.
+
+{\tt INTERNAL} ist bei lesenden Handles möglich.
+
+
+%%%% CALL
+\item Den {\tt CALL}-Block benutzt man nur bei (schreibenden) {\tt
+CALL}-Handles, um ihm mit Hilfe des {\tt OPTION}-Arguments die
+Kommandozeilen-Option für diese Property mitzugeben. Auch hier benutzt
+man den Wert der Property mit "`{\tt \$VAR}"'. 
+
+\begin{verbatim}
+   <CALL OPTION="$VAR"/>
+\end{verbatim}
+
+\end{enumerate}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Der {\tt SECTION}-Block}
+
+Für jede Section wird ebenfalls ein eigener Block mit dem XML-Tag {\tt
+SECTION} angegeben. Bisher einziges Argument ist {\tt ID}, mit dem der
+Section eine Kennung gegeben wird, auf die sich eine Property bezieht.
+
+\begin{verbatim}
+   <SECTION ID="sect">
+\end{verbatim}
+
+Innerhalb des {\tt SECTION}-Blocks muß es einen {\tt REGEXP}-Unterblock
+geben mit optionalem {\tt MODIFIERS}-Attribut. Der Syntax des {\tt
+REGEXP}-Blocks ist wie bei {\tt PROPERTY} (siehe voriges Kapitel). Man
+hat aber noch zusätzlich die Variablem "`{\tt KEY\_*}"' zu Verfügunf,
+wobei "`{\tt *}"' die Namen der Key-Properties bezeichnet.
+
+\begin{verbatim}
+   <REGEXP MODIFIERS="ms">(.*)^($KEY_Login:.+?)$(.*)</REGEXP>
+\end{verbatim}
+
+(In Zukunft wird es hier auch (wie bei {\tt PROPERTY} weitere
+Möglichkeiten geben wie {\tt FUNCTION}.)
+
+Hat eine {\tt PROPERTY} keine Referenz auf eine {\tt SECTION}, so wird
+die Default-RegExp "`{\tt ()(.*)()}"' mit dem Default-Modifier "`{\tt
+s}"' angenommen.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Der {\tt HANDLE}-Block}
+
+Jeder Handle wird in einem {\tt HANDLE}-Block definiert. Die folgenden
+Attribute sind möglich:
+
+\begin{itemize}
+\item {\tt ID} (zwingend)\\
+Die Kennung, auf die sich eine Property bezieht.
+\item {\tt NO} (zwingend)\\
+Eine Zahl, die angibt, in welcher Reihenfolge die verschiedenen Handles
+abgearbeitet werden müßen. Diese Zahl ist nur interessant, wenn man
+mehrere Handles benutzt.
+\item {\tt TYPE} (zwingend)\\
+Entweder {\tt FILE} oder {\tt COMMAND}, jenachdem, ob es sich um einen
+Handle handelt, der Dateien bearbeitet oder ein Programm aufruft.
+\item {\tt ACCESS} (zwingend)\\
+"`{\tt R}"', wenn es sich um einen rein lesenden Handle handelt, "`{\tt
+W}"', wenn er nur schreiben kann und "`{\tt RW}"', wenn er beides kann.
+\item {\tt NAME} (optional)\\
+Bei {\tt FILE}-Handles ist das einfach der Name der Datei, bei {\tt
+COMMAND}-Handles der Name des aufzurufenden Programmes (ggf. auch mit
+Kommandozeilenoptionen). \\
+Bei letzterem ist es wichtig zu beachten, daß bei {\em lesenden} {\tt
+CALL}-Handles der String mit "`{\tt |}"' aufhört, bei schreibenden mit
+"`{\tt |}"' beginnt.
+\end{itemize}
+
+\begin{verbatim}
+   <HANDLE ID="prog"    NO="1"    TYPE="CALL"    ACCESS="W"
+           NAME="programm --option |">
+\end{verbatim}
+
+Wird das {\tt NAME}-Attribut nicht angegeben, wird der Name mittels
+einer Perl-Funktion ermittelt. Diese muß "`{\tt handlename\_{\em
+PropertyName}()}"' heißen und bekommt als Input die Hash-Referenz mit den
+Key-Properties und eine zweite mit den bisher eingelesenen Werten. Als
+Output wird natürlich der Handlename (als String) erwartet.
+
+\begin{verbatim}
+   <HANDLE ID="signature"   NO="2"   TYPE="FILE"   ACCESS="RW">
+
+   sub handlename_signature {
+       my ($self, $keyBindings, $readValues) = @_;
+       my $login = $keyBindings->{Login};
+       return "/home/$login/.signature";
+   }
+\end{verbatim}
+
+Zwei weitere Blöcke werden zumindest bei schreibenden {\tt FILE}-Handles
+erwartet. Der erste zur Definition eines Whitespaces. Mit dem {\tt
+WRITE}-Attribut wird ein {\em einzelnes} Zeichen angegeben, das benutzt
+wird, wenn der Provider ein Whitespace schreiben muß. Default ist hier
+ein Leerzeichen.
+
+\begin{verbatim}
+   <WHITESPACE WRITE=" " />
+\end{verbatim}
+
+Der zweite Block charakterisiert Kommentare. Der {\tt
+READ.LINE}-Unterblock ent\-hält einen String, mit dem Zeilen-Kommentare
+beginnen. Mit {\tt WRITE.LINE} gibt man den Start eines
+Zeilen-Kommentars an, der ggf. von einem Provider geschrieben wird.
+
+\begin{verbatim}
+   <COMMENTS>
+     <READ.LINE>#</READ.LINE>
+     <WRITE.LINE> #</WRITE.LINE>
+   </COMMENTS>
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Der {\tt DEFINITIONS}-Block}
+
+Zur Simulation von ``Variablen'' in der XML-Datei, auf die man auch in
+den Perl-Modulen Zugriff haben will, gibt es {\tt DEFINITIONS} mit 
+Unterblöcken der Art {\tt DEFINE NAME="{}{\em name}"{}>{\em value}</DEFINE>}.
+Um diese ``Variable'' auch im XML-Dokument zu Verfügung zu haben,
+empfiehlt es sich, {\tt ENTITY}'s anzulegen.
+
+Beispiel: Am Anfang des Dokumentes die {\tt ENTITY}:
+
+\begin{verbatim}
+   <!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+   <!ENTITY fetchmailrc "/root/.fetchmailrc" >
+   ]>
+\end{verbatim}
+
+später in der XML-Datei die {\tt DEFINITION}:
+
+\begin{verbatim}
+   <DEFINITIONS>
+     <DEFINE NAME="fetchmailrc">&fetchmailrc;</DEFINE>
+   </DEFINITIONS>
+\end{verbatim}
+
+Auf die Variablen kann im Perl-Modul zugegriffen werden mit:
+
+\begin{verbatim}
+   my $fetchmailrc = $self->definition('fetchmailrc');
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Die Test-Umgebung}
+
+Wichtige Dateien:
+
+\begin{itemize}
+\item {\tt PaulA/lib/PaulA/Provider/test/*.pm} \\
+{\tt PaulA/lib/PaulA/Provider/common/*.pm} \\
+Die Provider-Perl-Module
+\item {\tt PaulA/lib/PaulA/Provider/test/*.xml} \\
+Die Provider-XML-Konfigurationsdateien
+\item {\tt PaulA/repository/xmlRoot/PaulA/C-*.xml} \\
+Die Klassen-Spezifikationen
+\item {\tt PaulA/t/*.t} \\
+Die Perl ``t-Tests'', die auch gleichzeitig als Test-Scripte taugen
+\end{itemize}
+
+Zum Testen empfiehlt sich folgender Workflow:
+
+\begin{enumerate}
+
+\item den Test-CIMOM starten:
+\begin{verbatim}
+   cd PaulA/t
+   perl -w cimomstart.t
+\end{verbatim}
+
+\item den Test aufrufen, beispielsweise:
+\begin{verbatim}
+   perl -w GetProperty-PaulA_User.t -v 4
+\end{verbatim}
+
+Zum vereinfachten Entwickeln versteht jeder Test folgende
+Komandozeilen-Optionen:
+
+\begin{itemize}
+\item {\tt -v {\em [num]}} \\
+Verbose-Level. Default (=0) ist so geschwätzig zu
+sein, wie der Test bei einem üblichen ``{\tt make test}'' ist.
+\item {\tt -a {\em num}} \\
+Abbruch nach dem {\em num}-ten ``{\tt ok}'' bzw. ``{\tt not ok}'' (Assert).
+\item {\tt -f {\em id}} \\
+Ruft die Test-Funktion {\tt test\_{\em id}()} auf anstelle der normalen Tests.
+\end{itemize}
+
+\item Ausgaben des CIMOMs in seinem Logfile beobachten:
+\begin{verbatim}
+   tail -f PaulA/t/cimom/log/error_log
+\end{verbatim}
+
+\item Ändert sich an den PaulA-Modulen etwas, kann es sein, daß der
+CIMOM diese Änderungen nicht neu lädt. In diesem Fall empfiehlt sich ein
+Restart des CIMOMs:
+\begin{verbatim}
+   perl -w cimomstart.t
+\end{verbatim}
+
+
+\end{enumerate}
+
+
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+% 
+% This program is free software; you can redistribute it and/or
+% modify it under the terms of the GNU General Public License
+% as published by the Free Software Foundation; either version 2
+% of the License, or (at your option) any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program; if not, write to the Free Software
+% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+% USA.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

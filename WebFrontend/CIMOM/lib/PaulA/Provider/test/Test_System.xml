@@ -1,0 +1,139 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY xf86config      "files/XF86Config"                >
+<!ENTITY dateout         "| setdate.sh"                    >
+<!ENTITY datein          "date +&#37;H:&#37;M:&#37;S |"    >
+<!ENTITY virtual         "files/postfix/virtual"           >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+  <!-- *********************** -->
+  <PROPERTY ID="KeyboardProtocol">
+
+    <INOUT SECTION="keyboard" HANDLE="xf86config">
+      <OPTIONAL_ASSIGNMENT DEFAULT="DefaultProtocol"
+			   TEXT="\tProtocol=&quot;$VAR&quot;\n"
+			   DELETE_IF_DEFAULT="false"/>
+      <REGEXP>.*\s(Protocol\s+"(.*?)")\s.*</REGEXP>
+    </INOUT>
+
+  </PROPERTY>
+
+  <!-- ****************** -->
+  <PROPERTY ID="MouseDevice">
+
+    <INOUT SECTION="pointer"
+	   HANDLE="xf86config">
+      <REQUIRED_ASSIGNMENT/>
+      <REGEXP>(.*Device\s+")(.+?)(".*)</REGEXP>
+    </INOUT>
+
+  </PROPERTY>
+
+
+  <!-- ********************** -->
+  <PROPERTY ID="Emulate3Buttons">
+
+    <INOUT SECTION="pointer" HANDLE="xf86config">
+      <FLAG DEFAULT="0"
+	    VALUE="1"
+	    TEXT="\tEmulate3Buttons\n"/>
+      <REGEXP>(.*\s)(Emulate3Buttons)(\s.*)</REGEXP>
+    </INOUT>
+
+  </PROPERTY>
+
+
+  <!-- **************** -->
+  <PROPERTY ID="LocalTime">
+    
+    <IN HANDLE="datein">
+      <REGEXP MODIFIERS="m">^()(.*)()$</REGEXP>
+    </IN>
+
+    <OUT HANDLE="dateout">
+      <CALL OPTION="$VAR"/>
+    </OUT>
+
+  </PROPERTY>
+
+  <!-- ********************* -->
+  <PROPERTY ID="VirtualDomains">
+    
+    <IN HANDLE="virtual">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </IN>
+
+  </PROPERTY>
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+  <SECTION ID="keyboard">
+    <REGEXP MODIFIERS="s">(.*\sSection\s+"Keyboard")(.+?)(EndSection\s.*)</REGEXP>
+  </SECTION>
+
+  <SECTION ID="pointer">
+    <REGEXP MODIFIERS="s">(.*\sSection\s+"Pointer")(.+?)(EndSection\s.*)</REGEXP>
+  </SECTION>
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+  <HANDLE ID="xf86config"        NO="1"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&xf86config;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="datein"            NO="4"      TYPE="COMMAND"     ACCESS="R"
+	  NAME="&datein;">
+  </HANDLE>
+
+  <HANDLE ID="dateout"           NO="5"      TYPE="COMMAND"     ACCESS="W"
+	  NAME="&dateout;">
+  </HANDLE>
+
+  <HANDLE ID="virtual"           NO="7"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&virtual;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

@@ -1,0 +1,1564 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE paula SYSTEM "paula.dtd">
+
+<paula>
+
+<node label="Paula" name="PAULA">
+	<node label="Benutzer" name="NODE-USER" cimproperty="MenuUsers">
+		<node label="anlegen" name="CREATEUSER" />
+		<node label="löschen" name="DELUSER" />
+	</node>
+	<node label="Internet" name="NODE-INTERNET">
+		<node label="Filter" name="FILTER"/>
+		<node label="Providerdaten" name="PROVIDERDATA"/>
+		<node label="Netzdaten" name="NETDATA"/>
+	</node>
+	<node label="System" name="NODE-SYSTEM">
+		<node label="Reboot" name="REBOOT"/>
+		<node label="Halt" name="HALT"/>
+	</node>
+	<node label="Mail" name="NODE-MAIL">
+		<node label="Eingang" name="NODE-RECEIVE" cimproperty="AllIncomingServers">
+			<node label="einrichten" name="CREATEMAILSERVERIN"/>
+			<node label="löschen" name="DELETEMAILSERVERIN"/>
+		</node>
+		<node label="Ausgang" name="NODE-SEND" cimproperty="AllOutgoingDomains">
+			<node label="einrichten" name="CREATEDOMAIN"/>
+			<node label="löschen" name="DELETEDOMAIN"/>
+			<node label="Standard" name="DEFAULTMAILSERVEROUT"/>
+		</node>
+		<node label="Abhol-Intervall" name="GETINTERVAL"/>
+		<node label="Mail manuell abholen" name="GETMAIL"/>
+	</node>
+	<node label="Fax" name="FAX"/>
+	<node label="VPN" name="VPN"/>
+	<node label="RAS" name="NODE-RAS">
+		<node label="anlegen" name="CREATERAS"/>
+		<node label="löschen" name="DELETERAS"/>
+		<node label="Schmidt" name="RASUSER"/>
+		<node label="Jacobs" name="RASUSER"/>
+		<node label="Janssen" name="RASUSER"/>
+		<node label="Schneider" name="RASUSER"/>
+	</node>
+	<node label="Mailverteiler" name="ADMINMAILINGLISTS"/>
+	<node label="DHCP" name="NODE-DHCP">
+		<node label="DHCP aktivieren" name="DHCPACTIVATE"/>
+		<node label="DNS einrichten" name="DNSSERVER"/>
+		<node label="IP-Adressen" name="IPADDRESSES"/>
+		<node label="Statische Adressen" name="STATICADDRESSES"/>
+		<node label="Standard Gateway" name="DEFGATEWAY"/>
+	</node>
+	<node label="Intranet" name="INTRANET"/>
+	<node label="Firewall" name="FIREWALL"/>
+	<node label="Statistiken" name="WEBSTATISTICS"/>
+	<node label="Paul Administration" name="NODE-PAULADMIN">
+		<node label="Konfiguration" name="NODE-PAULCONF">
+			<node label="Backup einspielen" name="UPLOADSETTINGS"/>
+			<node label="Backup erstellen" name="DOWNLOADSETTINGS"/>
+			<node label="Intervall" name="BACKUPSETTINGS"/>
+		</node>
+		<node label="Datenbackups" name="NODE-DATABACKUP">
+			<node label="einspielen" name="UPLOADDATABACKUP"/>
+			<node label="erstellen" name="DOWNLOADDATABACKUP"/>
+		</node>
+		<node label="Gruppen" name="NODE-GROUPRIGHTS" cimproperty="AllGroups">
+			<node label="anlegen" name="CREATEGROUP"/>
+			<node label="löschen" name="DELETEGROUP"/>
+		</node>
+		<node label="globale Aliase" name="GLOBALALIASES"/>
+		<node label="Paul aktualisieren" name="UPDATEPAUL"/>
+		<node label="Systemeinstellungen" name="SYSTEMSETTINGS"/>
+	</node>
+	<node label="Logout" name="LOGOUT"/>
+</node>
+
+
+  <!-- ___Create Group___________________________________________________ -->
+  <form name="CREATEGROUP" label="Paul Administration/Gruppen/anlegen" group="PAULADMIN/GROUPS">
+
+    <docs>
+      <title>Gruppe anlegen</title>
+      <description>Mit diesem Formular können Sie eine neue Gruppe anlegen.</description>
+      <help name="NewPaulAGroup">Zu welcher Paula-Gruppe soll der neue User gehören?</help>
+    </docs>
+
+    <components>
+      <inputfield label="Name der Gruppe" name="Create_Group" cimproperty="Create_Group" choosefrom="nothing"/>
+      <permissionlist label="Rechte dieser Gruppe an folgenden Formularen" name="NewPermissions" cimproperty="NewPermissions" choosefrom="Permissions" mandatory=""/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Anlegen" name="submit" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Create Group___________________________________________________ -->
+
+  
+
+  <!-- ___Delete Group___________________________________________________ -->
+  <form name="DELETEGROUP" label="Paul Administration/Gruppen/löschen" group="PAULADMIN/GROUPS">
+    <docs>
+      <title>Gruppe löschen</title>
+      <description>Mit diesem Formular können Sie Gruppen löschen</description>
+      <help name="DeleteGroup">Hier können Sie die Gruppe auswählen, die gelöscht werden soll</help>
+    </docs>
+
+    <components>
+      <singleselect label="Gruppe auswählen" name="Delete_Group" cimproperty="Delete_Group" choosefrom="AllGroups"/>
+    </components>
+
+    <actions>
+      <cimget>
+      </cimget>
+      <cimset>
+      </cimset>
+      <submit label="Löschen" name="submit" />
+      <reset label="Reset" name="reset" />
+    </actions>
+  </form>
+  <!-- ___Delete Group___________________________________________________ -->
+
+  
+
+
+
+
+
+
+  <!-- ___Create User____________________________________________________ -->
+  <form name="CREATEUSER" label="Benutzer/anlegen" group="USER">
+
+    <docs>
+      <title>Benutzer anlegen</title>
+      <description>Mit diesem Formular können Sie die Benutzer administrieren.</description>
+      <help name="NewRealName">Der Vor- und Zuname</help>
+      <help name="NewLogin">Der Login Name</help>
+      <help name="NewPassword">Das Passwort</help>
+      <help name="NewPaulAGroup">Zu welcher Paula-Gruppe soll der neue User gehören?</help>
+    </docs>
+
+    <components>
+      <inputfield label="Benutzername:" name="NewRealName" cimproperty="NewRealName" choosefrom="nothing"/>
+      <inputfield label="Login Name:" name="NewLogin" cimproperty="NewLogin" choosefrom="nothing"/>
+      <password label="Passwort:" name="NewPassword" cimproperty="NewPassword" choosefrom="nothing"/>
+      <singleselect label="Gruppe:" name="NewPaulAGroup" cimproperty="NewPaulAGroup" choosefrom="AllGroups">
+      </singleselect>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="submit" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Create User____________________________________________________ -->
+
+  
+
+  <!-- ___Delete User____________________________________________________ -->
+  <form name="DELUSER" label="Benutzer/löschen" group="USER">
+    <docs>
+      <title>Benutzer löschen</title>
+      <description>Mit diesem Formular können Sie die Benutzer löschen</description>
+      <help name="DeleteUser">
+          Hier können Sie den Benutzer auswählen, der gelöscht werden soll.
+      </help>
+    </docs>
+
+    <components>
+      <singleselect label="Benutzer auswählen" name="DeleteUser" cimproperty="DeleteUser" choosefrom="AllUsers">
+      </singleselect>
+    </components>
+
+    <actions>
+      <cimget>
+      </cimget>
+      <cimset>
+      </cimset>
+      <submit label="Ok" name="submit" />
+      <reset label="Reset" name="reset" />
+    </actions>
+  </form>
+  <!-- ___Delete User____________________________________________________ -->
+
+  
+  <!-- ___Login__________________________________________________________ -->
+  <form name="USERLOGIN" label="Benutzer/Login" group="USER">
+
+    <docs>
+      <title cimproperty="Login">Login-Daten für Benutzer </title>
+      <description>Mit diesem Formular können Sie die Einstellungen für den User verändern.</description>
+      <help name="RealName">Der tatsächliche Name des Benutzers</help>
+      <help name="Password">Das System-Passwort</help>
+    </docs>
+
+    <components>
+      <inputfield label="Benutzername" name="RealName" cimproperty="RealName"/>
+      <password label="Passwort" name="Password" cimproperty="Password"/>
+    </components>
+
+    <actions>
+	<cimget>
+	</cimget>	
+      <cimset>
+      </cimset>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+  </form>
+  <!-- ___Login__________________________________________________________ -->
+
+  
+  <!-- ___FAX-Durchwahlnummern___________________________________________ -->
+  <form name="USERFAX" label="Benutzer/Faxdurchwahl" group="USER">
+
+    <docs>
+      <title cimproperty="Login">Fax-Durchwahlnummern von </title>
+      <description>Geben Sie hier die Durchwahlnummern für Faxe an</description>
+      <help name="FaxNumberList">Sie können hier Durchwahlnummern aus der rechten Auswahlliste in die linke kopieren und damit diesem Benutzer zuweisen.</help>
+    </docs>
+
+    <components>
+      <exchangelist label="" name="FaxNumberList">
+	<list label="Fax-Durchwahlnummern" name="FaxExtensions" cimproperty="FaxExtensions"/>
+	<list label="Gültige Fax-Nummern" name="ValidFaxExtensions" cimproperty="ValidFaxExtensions"/>
+      </exchangelist>
+    </components>
+
+    <actions>
+	<cimget>
+	</cimget>	
+      <cimset>
+      </cimset>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+  </form>
+  <!-- ___FAX-Durchwahlnummern___________________________________________ -->
+
+  
+  <!-- ___Gruppen_________________________________________________________ -->
+  <form name="USERGROUPS" label="Benutzer/Gruppen" group="USER">
+    <docs>
+      <title>Gruppen</title>
+      <description>Hier können Sie Ihre Gruppenzugehörigkeit bearbeiten.</description>
+      <help name="usergroups">
+          Hier können Sie Ihre Gruppenzugehörigkeit bearbeiten.
+      </help>
+    </docs>
+
+    <components>
+      <exchangelist label="" name="usergroups">
+	<list label="Mitglied in" name="PaulAGroups" cimproperty="PaulAGroups"/>
+	<list label="Alle Gruppen" name="AllGroups" cimproperty="AllGroups"/>
+      </exchangelist>
+    </components>
+
+    <actions>
+      <cimget>
+      </cimget>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Gruppen_________________________________________________________ -->
+
+
+
+  <!-- ___Mail-Aliase_____________________________________________________ -->
+  <form name="USERMAIL" label="Benutzer/Mail-Aliase" group="USER">
+
+    <docs>
+      <title>Mail-Aliase</title>
+      <description>Hier können Sie Aliase eintragen, unter denen Sie auch erreichbar sind.</description>
+      <help name="MailAliases">Ihre Aliase auf dem System</help>
+    </docs>
+
+    <components>
+      <editlist label="E-Mail-Adresse" name="userMail">
+	<list label="" name="MailAliases" cimproperty="MailAliases"/>
+      </editlist>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+    
+  </form>
+  <!-- ___Mail-Aliase_____________________________________________________ -->
+
+  
+  
+  <!-- ___Mail-Verteiler________________________________________________ -->
+  <form name="USERMAILINGLISTS" label="Benutzer/Mail-Verteiler" group="USER">
+
+    <docs>
+      <title>Mail-Verteiler</title>
+      <description>Hier können Sie Mail-Verteiler bearbeiten.</description>
+      <help name="usermailinglists">Eine oder mehrere der vorhandenen Mailverteiler auswählen</help>
+    </docs>
+
+    <components>
+      <exchangelist label="" name="usermailinglists">
+	<list label="Eingetragen in" name="MailingLists" cimproperty="MailingLists"/>
+	<list label="vorhandene Mail-Verteiler" name="ValidMailingLists" cimproperty="ValidMailingLists"/>
+      </exchangelist>
+    </components>
+
+    <actions>
+      <cimget>
+      </cimget>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Mail-Verteiler________________________________________________ -->
+
+
+
+  <!-- ___Sicherheit_____________________________________________________ -->
+  <form name="USERSECURITY" label="Benutzer/Sicherheit" group="USER">
+
+    <docs>
+      <title>Sicherheit</title>
+      <description>Hier stellen Sie die Sicherheitsmechanismen ein.</description>
+      <help name="WebAccess">Zugriff auf das Internet</help>
+      <help name="HasLocalHomepage">Eigene Homepage im Home-Verzeichnis</help>
+      <help name="LoginShell">Welche Loginshell soll benutzt werden</help>
+    </docs>
+
+    <components>
+      <boolselect label="Webzugriff" name="WebAccess" cimproperty="WebAccess"/>
+      <boolselect label="Eigene Homepage" name="HasLocalHomepage" cimproperty="HasLocalHomepage"/>
+      <singleselect label="Login Shell" name="LoginShell" cimproperty="LoginShell" choosefrom="ValidLoginShells">
+        <default cimproperty="dummy" choosefrom="LoginShell"/>
+      </singleselect>
+    </components>
+
+    <actions>
+	<cimget>
+	</cimget>
+	<cimset>
+	</cimset>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Sicherheit_____________________________________________________ -->
+  
+
+  <!-- ___Private Mails__________________________________________________ -->
+  <form name="USERPRIVATEMAIL" label="Benutzer/Private Mails" group="USER">
+
+    <docs>
+      <title>Private Mails</title>
+      <description>In dieser Maske können Sie die Einstellungen für den Mailserver vornehmen.</description>
+      <help name="PrivatePopServer">Das Postfach auf dem POP-Server</help>
+      <help name="PrivatePopLogin">Der Loginname auf dem POP-Server</help>
+      <help name="PrivatePopPassword">Das Passwort</help>
+    </docs>
+
+    <components>
+      <inputfield label="POP Postfach" name="PrivatePopServer" cimproperty="PrivatePopServer"/>
+      <inputfield label="Login" name="PrivatePopLogin" cimproperty="PrivatePopLogin"/>
+      <password label="Passwort" name="PrivatePopPassword" cimproperty="PrivatePopPassword"/>
+    </components>
+
+    <actions>
+	
+	<cimget>
+	</cimget>
+	<cimset/>
+      
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Private Mails__________________________________________________ -->
+
+  
+
+
+  <!-- ___Urlaub_________________________________________________________ -->
+  <form name="USERVACATION"  label="Benutzer/Urlaub" group="USER">
+
+    <docs>
+      <title>Urlaub</title>
+      <description>Bearbeitung der Mails wenn man im Urlaub ist.</description>
+      <help name="MailForwarding">Forwarding-Adresse</help>
+      <help name="AutoReply">Es kann automatisch der unten stehende Text zurückgemailt werden</help>
+      <help name="ReplyText">Bitte geben Sie hier den Text ein, der während Ihrers Urlaubs in Antwortmails gesendet werden soll</help>
+    </docs>
+
+    <components>
+      <inputfield label="Mail weiterleiten an" name="MailForwarding" cimproperty="MailForwarding"/>
+      <boolselect label="Urlaubstext senden" name="AutoReply" cimproperty="AutoReply" value="0" />
+      <inputarea label="Urlaubstext" name="ReplyText" cimproperty="ReplyText"/>
+    </components>
+
+    <actions>
+	<cimget>
+	</cimget>
+	<cimset>
+	</cimset>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Urlaub_________________________________________________________ -->
+
+  
+
+  <!-- ___Filter_________________________________________________________ -->
+  <form name="FILTER" label="Internet/Filter" group="INTERNET">
+
+    <docs>
+      <title>Filter</title>
+      <description>Hier können Sie einstellen, welche Webseiten gefiltert werden sollen.</description>
+      <help name="FilterEnabled">Werbebanner filtern</help>
+      <help name="BlockList">URL's eingeben</help>
+    </docs>
+
+    <components>
+      <boolselect label="Werbebanner filtern" name="FilterEnabled" cimproperty="FilterEnabled"> Ja/Nein</boolselect>
+      <editlist label="Seiten sperren" name="newfilter">
+	<list name="BlockList" cimproperty="BlockList"/>
+      </editlist>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <action label="Werbeblockliste herunterladen" name="DOWNLOADLIST" method="downloadFilterList()"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Filter_________________________________________________________ -->
+
+  
+
+
+
+  <!-- ___Provider Daten_________________________________________________ -->
+  <form name="PROVIDERDATA" label="Internet/Provider Daten" group="INTERNET">
+
+    <docs>
+      <title>Provider Daten</title>
+      <description>Bitte geben Sie hier alle nötigen Daten für die Verbindung zu Ihrem Internet-Provider an.</description>
+      <help name="providernumber">Telefonnummer für die Einwahl beim Provider</help>
+      <help name="msn">MSN</help>
+      <help name="providerlogin">Providerlogin</help>
+      <help name="serverpasswd">Serverpasswort</help>
+    </docs>
+
+    <components>
+      <inputfield label="Providernummer" name="providernumber" />
+      <inputfield label="MSN" name="msn" />
+      <inputfield label="Login" name="providerlogin" />
+      <password label="Passwort" name="serverpasswd" />
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Provider Daten_________________________________________________ -->
+
+  
+
+
+  <!-- ___Netzdaten______________________________________________________ -->
+  <form name="NETDATA" label="Internet/Netzdaten" group="INTERNET">
+
+    <docs>
+      <title>Netzdaten</title>
+      <description>Bitte geben Sie hier alle nötigen Daten für die Netzwerk-Verbindung an.</description>
+      <help name="setip">IP-Vergabe</help>
+      <help name="ownip">Eigene IP-Adresse</help>
+      <help name="providerip">Provider IP-Adresse</help>
+      <help name="dnsip">DNS</help>
+    </docs>
+
+    <components>
+      <singleselect label="IP-Vergabe" name="setip" >
+	<default value="static">statisch</default>
+	<choice value="dynamic">dynamisch</choice>
+      </singleselect>
+      <inputIP label="Eigene IP-Adresse" name="ownip" >192.168.100.1</inputIP>
+      <inputIP label="Provider IP-Adresse" name="providerip" />
+      <inputIP label="DNS" name="dnsip" />
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset />
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Netzdaten______________________________________________________ -->
+
+
+
+  <!-- ___Reboot_________________________________________________________ -->
+  <form name="REBOOT" label="System/Reboot" group="SYSTEM">
+
+    <docs>
+      <title>Reboot</title>
+      <description>Wenn Sie den Rechner neu starten wollen, dann drücken Sie den REBOOT-Button.</description>
+      <help name="reboot">ACHTUNG: Wenn Sie den Rechner neu starten fallen alle Dienste aus, die der Rechner evtl. anbietet.
+		Sie sollten sich genau überlegen, ob Sie gerade jetzt Ihren Fileserver neu starten wollen!</help>
+    </docs>
+
+    <components>
+      <text>&#160;</text>
+      <text name="reboot">Soll der Rechner wirklich neu gestartet werden?</text>
+      <text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset>
+      </cimset>
+      <submit label="Reboot" name="submit"/>
+    </actions>
+
+  </form>
+  <!-- ___Reboot_________________________________________________________ -->
+
+  
+
+
+
+  <!-- ___Halt___________________________________________________________ -->
+  <form name="HALT" label="System/Halt" group="SYSTEM">
+
+    <docs>
+      <title>Halt</title>
+      <description>Hier können Sie den Rechner anhalten - er bootet dann nicht neu!</description>
+      <help name="halt">ACHTUNG: Wenn Sie den Rechner anhalten fallen alle Dienste aus, die der Rechner evtl. anbietet.
+		Sie sollten sich genau überlegen, ob Sie gerade jetzt Ihren Fileserver anhalten wollen!!!</help>
+    </docs>
+
+    <components>
+      <text>&#160;</text>
+      <text name="halt">Soll der Rechner wirklich angehalten werden?</text>
+      <text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset>
+      </cimset>
+      <submit label="Halt" name="SUBMIT"/>
+    </actions>
+
+  </form>
+  <!-- ___Halt___________________________________________________________ -->
+
+
+
+  <!-- ___Create MailserverIn____________________________________________ -->
+  <form name="CREATEMAILSERVERIN" label="Mail/Eingang/einrichten" group="MAIL/IN">
+    <docs>
+      <title>Mailserver für eingehende Mail einrichten</title>
+      <description>Bitte geben Sie hier alle nötigen Daten für die Verbindung zum Provider an.</description>
+      <help name="MailServerIn">Bitte geben Sie hier den Namen des Mailservers ein</help>
+      <help name="Create_IMSProtocol">Protokoll</help>
+      <help name="Create_IMSLogin">Ihr Loginname für diesen Mailserver</help>
+      <help name="Create_IMSPassword">Ihr Passwort für diese Mailserver</help>
+    </docs>
+
+    <components>
+      <inputfield label="Servername" name="Create_IncomingMailServer" cimproperty="Create_IncomingMailServer" choosefrom="nothing"/>
+      <singleselect label="Protokoll" name="Create_IMSProtocol" cimproperty="Create_IMSProtocol" choosefrom="nothing">
+	<choice value="POP3-Multidrop" activate="Login::Password">POP3-Multidrop</choice>
+	<choice value="POP3" activate="Login::Password">POP3</choice>
+	<choice value="ETRN" deactivate="Login::Password">ETRN</choice>
+      </singleselect>
+      <inputfield label="Login" name="Create_IMSLogin" cimproperty="Create_IMSLogin" choosefrom="nothing"/>
+      <password label="Passwort" name="Create_IMSPassword" cimproperty="Create_IMSPassword" choosefrom="nothing"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+  </form>
+  <!-- ___Create MailserverIn____________________________________________ -->
+
+  
+  <!-- ___Delete MailserverIn____________________________________________-->
+  <form name="DELETEMAILSERVERIN" label="Mail/Eingang/löschen" group="MAIL/IN">
+    <docs>
+      <title>Mailserver für eingehende Mail löschen</title>
+      <description>Wenn Sie einen Mailserver löschen wollen, dann wählen Sie sie aus der Liste aus.</description>
+      <help name="Delete_IncomingMailServer">Wählen Sie die Domäne aus, die Sie löschen wollen</help>
+    </docs>
+
+    <components>
+      <singleselect label="Mailserver" name="Delete_IncomingMailServer" cimproperty="Delete_IncomingMailServer" choosefrom="AllIncomingServers"/>
+    </components>
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Löschen" name="SUBMIT"/>
+    </actions>
+  </form>
+  <!-- ___Delete MailserverIn____________________________________________-->
+
+  
+  <!-- ___MailServer_Settings____________________________________________ -->
+  <form name="MAILSERVERINSETTINGS" label="Mail/Eingang/Server-Einstellungen" group="MAIL/IN">
+
+    <docs>
+      <title cimproperty="MailInServerName">Einstellungen des Mailservers </title>
+      <description>Hier können Sie die Einstellungen des Mailservers verändern.</description>
+      <help name="MailInProtocol">Protokoll</help>
+      <help name="MailInLogin">Ihr Loginname für diesen Mailserver (nicht bei ETRN)</help>
+      <help name="MailInPassword">Ihr Passwort für diesen Mailserver (nicht bei ETRN)</help>
+    </docs>
+
+    <components>
+      <singleselect label="Protokoll" name="MailInProtocol" cimproperty="MailInProtocol">
+	<default value="POP3-Multidrop">POP3-Multidrop</default>
+	<choice value="POP3">POP3</choice>
+	<choice value="ETRN">ETRN</choice>
+      </singleselect>
+      <inputfield label="Login" name="MailInLogin" cimproperty="MailInLogin"/>
+      <password label="Passwort" name="MailInPassword" cimproperty="MailInPassword"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___MailServer_Settings____________________________________________ -->
+
+  
+
+
+
+  <!-- ___Create Domain__________________________________________________ -->
+  <form name="CREATEDOMAIN" label="Mail/Ausgang/einrichten" group="MAIL/OUT">
+    <docs>
+      <title>Domäne für ausgehende Mail einrichten</title>
+      <description>Bitte geben Sie hier alle nötigen Daten der Domäne an.</description>
+      <help name="Create_OutgoingMailDomain">Bitte geben Sie hier den Namen der Domäne ein</help>
+      <help name="Create_OMDServer">Mailserver, der zum versenden der Mails dieser Domäne genutzt werden soll</help>
+    </docs>
+
+    <components>
+      <inputfield label="Domäne" name="Create_OutgoingMailDomain" cimproperty="Create_OutgoingMailDomain" choosefrom="nothing"/>
+      <inputfield label="Servername" name="Create_OMDServer" cimproperty="Create_OMDServer" choosefrom="nothing"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+  </form>
+  <!-- ___Create Domain__________________________________________________ -->
+
+  
+  <!-- ___Delete Domain__________________________________________________ -->
+  <form name="DELETEDOMAIN" label="Mail/Ausgang/löschen" group="MAIL/OUT">
+    <docs>
+      <title>Domäne löschen</title>
+      <description>Wenn Sie eine Domäne löschen wollen, dann wählen Sie sie aus der Liste aus.</description>
+      <help name="Delete_OutgoingMailDomain">Wählen Sie die Domäne aus, die Sie löschen wollen</help>
+    </docs>
+
+    <components>
+      <singleselect label="Domäne" name="Delete_OutgoingMailDomain" cimproperty="Delete_OutgoingMailDomain" choosefrom="AllOutgoingDomains"/>
+    </components>
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Löschen" name="SUBMIT"/>
+    </actions>
+  </form>
+  <!-- ___Delete Domain__________________________________________________ -->
+
+  
+
+  <!-- ___Domain_Settings________________________________________________ -->
+  <form name="DOMAINSETTINGS" label="Mail/Ausgang/Domain-Einstellungen" group="MAIL/OUT">
+
+    <docs>
+      <title cimproperty="MailOutDomain">Einstellungen der Domäne </title>
+      <description>Hier können Sie einstellen über welchen Server die Mails dieser Domäne versendet werden sollen.</description>
+      <help name="MailOutServer">Bitte geben Sie hier den Namen des Servers an, über den die Mails dieser Domäne verschickt werden soll.</help>
+    </docs>
+
+    <components>
+      <inputfield label="Servername" name="MailOutServer" cimproperty="MailOutServer"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Domain_Settings________________________________________________ -->
+
+  
+
+  <!-- ___Default_Domain_________________________________________________ 
+  <fo rm name="DEFAULTMAILSERVEROUT"  label="Mail/Ausgang/Default-Mailserver" group="MAIL/OUT">
+     ^ - dieses Leerzeichen ist wichtig damit der regexp hier nicht matcht ;)
+    <docs>
+      <title>URL des Standard-Servers für ausgehende Mail</title>
+      <description>In dieser Maske können sie einen Standard-Server für ausgehende Mail angeben.</description>
+      <help name="RelayHost">Mailserver, der generell zum versenden von Mails genutzt werden soll</help>
+    </docs>
+
+    <components>
+	
+	War eine nette Idee, aber hat nicht geklappt.
+	
+	
+      <selectgroup label="Andere Mail" name="UseRelayHost" cimproperty="UseRelayHost">
+
+        <group name="g0" value="0" label="direkt zustellen">
+	</group>
+
+        <group name="g1" value="1" label="senden an">
+          <inputfield label="Servername" name="RelayHost" cimproperty="RelayHost"/>
+	</group>
+	
+      </selectgroup>
+
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  ___Default_Domain_________________________________________________ -->
+
+
+
+  <!-- ___Default_Domain_________________________________________________ -->
+  <form name="DEFAULTMAILSERVEROUT"  label="Mail/Ausgang/Default-Mailserver" group="MAIL/OUT">
+
+    <docs>
+      <title>URL des Standard-Servers für ausgehende Mail</title>
+      <description>In dieser Maske können sie einen Standard-Server für ausgehende Mail angeben.</description>
+      <help name="UseRelayHost">Hiermit aktivieren Sie den Standard-Servers für ausgehende Mail</help>
+      <help name="RelayHost">Mailserver, der generell zum versenden von Mails genutzt werden soll</help>
+    </docs>
+
+    <components>
+      <singleselect label="Andere Mail" name="UseRelayHost" cimproperty="UseRelayHost">
+        <default value="0">direkt zustellen</default>
+	<choice value="1">senden an</choice>
+      </singleselect>
+      <inputfield label="Servername" name="RelayHost" cimproperty="RelayHost"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Default_Domain_________________________________________________ -->
+
+  
+
+  <!-- ___Mail Intervall_________________________________________________ -->
+  <form name="GETINTERVAL"  label="Mail/Abhol-Intervall" group="MAIL">
+
+    <docs>
+      <title>Mail Abhol-Intervall</title>
+      <description>Sie können hier einstellen, in welchen Intervallen die Mail abgeholt werden soll.</description>
+      <help name="MailWeekdaysStart">Zeitangabe im Format hh:mm</help>
+      <help name="MailWeekdaysEnd">Zeitangabe im Format hh:mm</help>
+      <help name="MailWeekdaysInterval">...</help>
+      <help name="MailWeekendStart">Zeitangabe im Format hh:mm</help>
+      <help name="MailWeekendEnd">Zeitangabe im Format hh:mm</help>
+      <help name="MailWeekendInterval">...</help>
+      <help name="FetchMailsOnDialUp">...</help>
+    </docs>
+
+    <components>
+      <text>Werktags</text>
+      <inputtime label="von" name="MailWeekdaysStart" cimproperty="MailWeekdaysStart"/>
+      <inputtime label="bis" name="MailWeekdaysEnd" cimproperty="MailWeekdaysEnd"/>
+      <inputvalue label="Takt in Minuten" name="MailWeekdaysInterval" cimproperty="MailWeekdaysInterval"/>
+
+      <text>Wochenende</text>
+      <inputtime label="von" name="MailWeekendStart" cimproperty="MailWeekendStart"/>
+      <inputtime label="bis" name="MailWeekendEnd" cimproperty="MailWeekendEnd"/>
+      <inputvalue label="Takt in Minuten" name="MailWeekendInterval" cimproperty="MailWeekendInterval"/>
+      
+      <boolselect label="Mail bei Verbindungsaufbau holen" name="FetchMailsOnDialUp" cimproperty="FetchMailsOnDialUp"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Mail Intervall_________________________________________________ -->
+
+  
+  
+
+  <!-- ___Mail abholen___________________________________________________ -->
+  <form name="GETMAIL"  label="Mail/manuell abholen" group="MAIL">
+
+    <docs>
+      <title>Mail abholen</title>
+      <description>Sie haben nun die Möglichkeit die Mails manuell abzuholen.</description>
+      <help name="byhand">Drücken Sie den "Jetzt abholen"-Knopf, um jetzt manuell eine Verbindung zum Mailserver
+		aufzubauen und Mails abzuholen.</help>
+    </docs>
+
+    <components>
+      <text>&#160;</text>
+      <text name="byhand">Mail manuell abholen?</text>
+      <text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset>
+      </cimset>
+      <submit label="Jetzt abholen" name="SUBMIT" />
+    </actions>
+
+  </form>
+  <!-- ___Mail abholen___________________________________________________ -->
+
+  
+
+
+  <!-- ___FAX____________________________________________________________ -->
+  <form name="FAX"  label="Fax" group="">
+
+    <docs>
+      <title>FAX</title>
+      <description>Angaben zum Faxen über den Rechner.</description>
+      <help name="HeaderIDString">Kennung für versendete Faxe</help>
+      <help name="HeaderFaxNumber">Faxnummer, die in der Kopfzeile von versendeten Faxen erscheint</help>
+      <help name="CountryCode">Die Vorwahlnummer Ihres Landes ohne führende Nullen, z.B. '49' für Deutschland</help>
+      <help name="AreaCode">Die Vorwahlnummer Ihres Ortes ohne führende Nullen, z.B. '228' für Bonn</help>
+      <help name="DefaultMailForward">E-Mail-Adresse zu der die ankommenden Faxe ohne Durchwahlnummer geschickt werden sollen</help>
+      <help name="ValidFaxExtensions">Die Rufnummern, unter denen Ihre Faxgeräte erreichbar sind</help>
+      <help name="BaseNumber">Wenn Sie eine Faxanlage haben, dann tragen Sie hier bitte deren Rufnummer ein und in den nächsten beiden Feldern den Durchwahlnummernbereich</help>
+      <help name="ExtensionRange">Tragen Sie hier bitte die kleinste und größte Durchwahlnummer, die über ihre Faxanlage erreichbar ist, ein</help>
+    </docs>
+
+    <components>
+      <inputfield label="Faxheader" name="HeaderIDString" cimproperty="HeaderIDString"/>
+      <inputfield label="Faxnummer" name="HeaderFaxNumber" cimproperty="HeaderFaxNumber"/>
+      <inputvalue label="Ländervorwahl" name="CountryCode" cimproperty="CountryCode"/>
+      <inputvalue label="Ortsvorwahl" name="AreaCode" cimproperty="AreaCode"/>
+      <inputfield label="Faxweiterleitung an" name="DefaultMailForward" cimproperty="DefaultMailForward"/>
+      
+      <singleselect label="Anschlussart" name="UseBaseNumber" cimproperty="UseBaseNumber" mandatory="">
+        <choice value="1">Anlagenanschluss</choice>
+        <choice value="0">Basisanschluss</choice>
+      </singleselect>
+      
+      <text>Anlagenanschluss</text>
+      <inputvalue label="Rufnummer" name="BaseNumber" cimproperty="BaseNumber" mandatory=""/>
+
+      <inputrange label="Durchwahlnummern gehen" startLabel="von" endLabel="bis" name="ExtensionRange" cimproperty="ExtensionRange"/>
+      
+      <text>Basisanschluss</text>
+      <editlist label="MSN (Rufnummern)" name="MSNs">
+        <list name="ValidFaxExtensions" cimproperty="ValidFaxExtensions"/>
+      </editlist>
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset />
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___FAX____________________________________________________________ -->
+
+  
+
+
+  <!-- ___VPN____________________________________________________________ -->
+  <form name="VPN"  label="VPN" group="">
+
+    <docs>
+      <title>Virtual Private Network (VPN)</title>
+      <description></description>
+      <help name="VPNEnabled">Mit diesem Schalter können Sie die Verwendung eines VPN aktivieren</help>
+      <help name="VPNIsServer">???</help>
+      <help name="VPNServerIP">???</help>
+      <help name="VPNServerPort">???</help>
+      <help name="VPNRemote">???</help>
+      <help name="VPNLocal">???</help>
+      <help name="VPNRouteLocalNetwork">???</help>
+    </docs>
+
+    <components>
+      <boolselect label="VPN aktivieren" name="VPNEnabled" cimproperty="VPNEnabled"> Ja/Nein</boolselect>
+      <boolselect label="Modus" name="VPNIsServer" cimproperty="VPNIsServer">Server/Client</boolselect>
+      <inputIP label="Entfernte echte IP-Adresse" name="VPNServerIP" cimproperty="VPNServerIP"/>
+      <inputfield label="Server-Portnummer" name="VPNServerPort" cimproperty="VPNServerPort"/>
+      <inputIP label="Entfernte private IP-Adresse" name="VPNRemote" cimproperty="VPNRemote"/>
+      <inputIP label="Eigene private IP-Adresse" name="VPNLocal" cimproperty="VPNLocal"/>
+      <boolselect label="Lokales Netz routen" name="VPNRouteLocalNetwork" cimproperty="VPNRouteLocalNetwork"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___VPN____________________________________________________________ -->
+
+
+
+
+  <!-- ___createRAS______________________________________________________ -->
+  <form name="CREATERAS"  label="RAS/anlegen" group="RAS">
+
+    <docs>
+      <title>RAS anlegen</title>
+      <description></description>
+      <help name="rasUser">Benutzername dieses RAS</help>
+      <help name="rasUserPW">Passwort dieses RAS</help>
+      <help name="msn">MSN</help>
+      <help name="rasip">Zugewiesene IP-Adresse</help>
+    </docs>
+
+    <components>
+      <inputfield label="User" name="rasUser" />
+      <password label="Passwort" name="rasUserPW" />
+      <inputfield label="MSN" name="msn" />
+      <inputIP label="Zugewiesene IP-Adresse" name="rasip" />
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset />
+      <submit label="Ok" name="SUBMIT" />
+    </actions>
+
+  </form>
+  <!-- ___RASanlegen_____________________________________________________ -->
+
+  
+
+  <!-- ___deleteRAS______________________________________________________ -->
+  <form name="DELETERAS"  label="RAS/löschen" group="RAS">
+
+    <docs>
+      <title>RAS löschen</title>
+      <description>Bitte wählen Sie einen RAS-User aus der Liste aus und drücken dann auf den Löschen-Knopf, um ihn zu löschen.</description>
+      <help name="rasUserList">Liste der RAS-User</help>
+    </docs>
+
+    <components>
+	<singleselect label="RAS-User-Liste" name="rasUserList">
+		<choice value="Schneider">Schneider</choice>
+		<choice value="Schmidt">Schmidt</choice>
+		<choice value="Janssen">Janssen</choice>
+		<choice value="Jacobs">Jacobs</choice>
+	</singleselect>
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset />
+      <submit label="Löschen" name="SUBMIT" />
+    </actions>
+
+  </form>
+  <!-- ___deleteRAS______________________________________________________ -->
+
+  
+
+  <!-- ___RASUser________________________________________________________ -->
+  <form name="RASUSER"  label="RAS/Einstellungen" group="RAS">
+
+    <docs>
+      <title>RAS-User</title>
+      <description></description>
+      <help name="rasUser">Benutzername dieses RAS</help>
+      <help name="rasUserPW">Passwort dieses RAS</help>
+      <help name="msn">MSN</help>
+      <help name="rasip">Zugewiesene IP-Adresse</help>
+    </docs>
+
+    <components>
+      <inputfield label="User" name="rasUser" />
+      <password label="Passwort" name="rasUserPW" />
+      <inputfield label="MSN" name="msn" />
+      <inputIP label="Zugewiesene IP-Adresse" name="rasip" />
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset />
+      <submit label="Ok" name="SUBMIT" />
+    </actions>
+
+  </form>
+  <!-- ___RAS____________________________________________________________ -->
+
+  
+
+  <!-- ___Mailing Listen_________________________________________________ -->
+  <form name="ADMINMAILINGLISTS"  label="Mailverteiler" group="">
+
+    <docs>
+      <title>Mailverteiler</title>
+      <description>Global zur verfügung stehende Aliasse für die Verteilung eingehender Mails.</description>
+      <help name="ValidMailingLists">Alle Mailinglisten, die von Benutzern auf dem System empfangen werden können</help>
+    </docs>
+
+    <components>
+      <editlist label="" name="adminmailinglists">
+	<list label="" name="ValidMailingLists" cimproperty="ValidMailingLists"/>
+      </editlist>
+    </components>
+
+    <actions>
+      <cimget>
+      </cimget>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Mailing Listen_________________________________________________ -->
+
+  
+
+
+  
+  <!-- ___DHCP-Aktivieren________________________________________________ -->
+  <form name="DHCPACTIVATE"  label="DHCP/aktivieren" group="DHCP">
+
+    <docs>
+      <title>DHCP aktivieren</title>
+      <description>Wenn Sie DHCP aktivieren wollen, wählen Sie bitte den Schalter an.</description>
+      <help name="DHCPEnabled">DHCP aktivieren</help>
+    </docs>
+
+    <components>
+      <boolselect label="DHCP aktivieren?" name="DHCPEnabled" cimproperty="DHCPEnabled"> Ja/Nein</boolselect>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___DHCP-Aktivieren________________________________________________ -->
+
+  
+  
+
+  <!-- ___IP-Adressen____________________________________________________ -->
+  <form name="IPADDRESSES"  label="DHCP/IP-Adressen" group="DHCP">
+
+    <docs>
+      <title>IP-Adressen</title>
+      <description></description>
+      <help name="IPRanges">IP-Adresse</help>
+    </docs>
+
+    <components>
+      <editIPIPlist label="" name="ipadressen">
+	<list label="" name="IPRanges" cimproperty="IPRanges"/>
+      </editIPIPlist>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___IP-Adressen____________________________________________________ -->
+
+  
+  
+
+  <!-- ___Statische Adressen_____________________________________________ -->
+  <form name="STATICADDRESSES"  label="DHCP/statische Adressen" group="DHCP">
+
+    <docs>
+      <title>Statische Adressen</title>
+      <description>Bitte die MAC(Media Access Control)-Adressen und die IP-Adressen der Netzwerkkarten eintragen.</description>
+      <help name="HostMappings">Die MAC(Media Access Control)-Adressen und die IP-Adressen der Netzwerkkarten</help>
+    </docs>
+
+    <components>
+
+      <editMACIPlist label="" name="maciplist" >
+	<list label="" name="HostMappings" cimproperty="HostMappings"/>
+      </editMACIPlist>
+
+      
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Statische Adressen_____________________________________________ -->
+
+
+
+
+  <!-- ___DNS-Server_____________________________________________________ -->
+  <form name="DNSSERVER"  label="DHCP/DNS" group="DHCP">
+
+    <docs>
+      <title>Domain Name Server - DNS</title>
+      <description>Eingetragene Nameserver bearbeiten.</description>
+      <help name="DomainNameServers">IP Adresse</help>
+    </docs>
+
+    <components>
+      <editIPlist label="" name="dnsserver">
+	<list label="" name="DomainNameServers" cimproperty="DomainNameServers"/>
+      </editIPlist>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset"/>
+    </actions>
+
+  </form>
+  <!-- ___DNS-Server_____________________________________________________ -->
+
+
+
+  
+  <!-- ___Default Gateway________________________________________________ -->
+  <form name="DEFGATEWAY"  label="DHCP/Standard-Gateway" group="DHCP">
+
+    <docs>
+      <title>Standard-Gateway</title>
+      <description>Bitte geben Sie hier die IP-Nummer des Standard-Gateways an.</description>
+      <help name="DefaultGateway">Über das Standard-Gateway werden alle Anfragen an das Netz weitergeleitet, die nicht
+		aufgelöst werden können. Namen, die z.B. nicht in Ihrem lokalen Netzwerk bekannt sind, werden
+		dann evtl. an einen Top-Level Nameserver weitergeleitet und dort aufgelöst.</help>
+    </docs>
+
+    <components>
+      <text>&#160;</text>
+      <inputIP label="IP-Nummer" name="DefaultGateway" cimproperty="DefaultGateway"/>
+      <text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Default Gateway________________________________________________ -->
+
+
+
+
+  <!-- ___Intranet_______________________________________________________ -->
+  <form name="INTRANET"  label="Intranet" group="">
+
+    <docs>
+      <title>Intranet</title>
+      <description>Bitte geben Sie hier die Domain Ihres Webservers ein.</description>
+      <help name="IntranetServerName">Der Webserver ist für die Verwaltung Ihrer Homepage und Zugriffe darauf verantwortlich.
+		Üblicherweise haben diese Domains folgenden Aufbau: www.ihreDomain.de</help>
+    </docs>
+
+    <components>
+      <inputfield label="Web Server Domain" name="IntranetServerName" cimproperty="IntranetServerName"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset"/>
+    </actions>
+
+  </form>
+  <!-- ___Intranet_______________________________________________________ -->
+
+  
+  
+
+  <!-- ___Firewall_______________________________________________________ -->
+  <form name="FIREWALL"  label="Firewall" group="">
+
+    <docs>
+      <title>Firewall</title>
+      <description>Stellen Sie bitte ein, welche Dienste die Firewall zulassen soll.</description>
+      <help name="TelnetEnabled">Via 'telnet' auf einen fremden Rechner im Internet einloggen</help>
+      <help name="SSHEnabled">Via ssh (secure shell) eine verschlüsselte Verbindung zu einem Rechner im Internet aufbauen</help>
+      <help name="PingEnabled">Das anpingen von Rechnern im Internet</help>
+      <help name="NewsEnabled">News-Dienste im Internet abfragen</help>
+      <help name="RealAudioVideoEnabled">Real Audio/Video-Daten aus dem Internet empfangen</help>
+    </docs>
+
+    <components>
+      <text>Ermögliche</text>
+      <boolselect label="Telnet" name="TelnetEnabled" cimproperty="TelnetEnabled"/>
+      <boolselect label="NewsEnabled" name="NewsEnabled" cimproperty="NewsEnabled"/>
+      <boolselect label="SSH" name="SSHEnabled" cimproperty="SSHEnabled"/>
+      <boolselect label="Ping" name="PingEnabled" cimproperty="PingEnabled"/>
+      <boolselect label="Real Audio/Video" name="RealAudioVideoEnabled" cimproperty="RealAudioVideoEnabled"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Firewall_______________________________________________________ -->
+
+  
+  <!-- ___AdministrationAdmin____________________________________________ -->
+  <form name="ADMINGROUPS" label="Paul Administration/Gruppen/Gruppenrechte" group="PAULADMIN/GROUPS">
+
+    <docs>
+      <title cimproperty="Classifier">Admininistration der Gruppenrechte für </title>
+      <description>Hier konfigurieren Sie die Zugriffsrechte der betreffenden Gruppe.</description>
+    </docs>
+
+    <components>
+    	<permissionlist label="" name="Permissions" cimproperty="Permissions"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___AdministrationAdmin____________________________________________ -->
+  
+  
+  
+  <!-- ___Backupeinstellungen____________________________________________ -->
+  <form name="BACKUPSETTINGS" label="Paul Administration/Konfiguration/Intervall" group="PAULADMIN/CONFIG">
+
+    <docs>
+      <title>Intervall</title>
+      <description>In dieser Maske können Sie festlegen wann die Systemkonfiguration von PaulA gesichert werden soll und an welche Adresse sie geschickt werden sollen.</description>
+
+      <help name="BackupPeriod">Hier geben Sie an nach wieviel Tagen jeweils ein Backup initiert werden soll.</help>
+      <help name="BackupEMailAddress">Geben Sie bitte hier die EMailadresse ein an die das Backup geschickt werden soll.</help>
+    </docs>
+
+    <components>
+      <inputfield label="Senden an" name="BackupEMailAddress"/>
+      <singleselect label="Backup-Periode (in Tagen)" name="BackupPeriod">
+	<default value="7">7</default>
+	<choice value="6">6</choice>
+	<choice value="5">5</choice>
+	<choice value="4">4</choice>
+	<choice value="3">3</choice>
+	<choice value="2">2</choice>
+	<choice value="1">1</choice>
+	<choice value="0">Keine Backups</choice>
+      </singleselect>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+
+  </form>
+  <!-- ___Backupeinstellungen____________________________________________ -->
+  
+
+  <!-- ___Backup der Systemeinstellungen erstellen_______________________ -->
+  <form name="DOWNLOADSETTINGS" label="Paul Administration/Konfiguration/Backup erstellen" group="PAULADMIN/CONFIG">
+
+    <docs>
+      <title>Backup der Paul-Konfiguration erstellen</title>
+      <description>Hier können Sie ein Backup der Einstellungen von Paul erstellen.</description>
+    </docs>
+
+    <components>
+	<text>&#160;</text>
+	<text>Drücken Sie auf den Download-Button um ein Backup</text>
+	<text>der Einstellungen von Paul zu erstellen.</text>
+	<text>Das Backup wird ihnen automatisch zugesendet.</text>
+	<text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Download" name="SUBMIT"/>
+    </actions>
+  </form>
+  <!-- ___Backup der Daten erstellen_____________________________________ -->
+  
+
+  <!-- ___Backup der Daten einspielen____________________________________ -->
+  <form name="UPLOADSETTINGS" label="Paul Administration/Konfiguration/Backup einspielen" group="PAULADMIN/CONFIG">
+
+    <docs>
+      <title>Backup der Paul-Konfiguration einspielen</title>
+      <description>Hier können Sie ein Backup der Einstellungen von Paul einspielen.</description>
+      <help name="filename">Bitte wählen Sie eine Datei aus</help>
+    </docs>
+
+    <components>
+	<text>&#160;</text>
+	<text>Drücken Sie auf den Upload-Button um die ausgewählte</text>
+	<text>Backup-Datei der Einstellungen von Paul einzuspielen.</text>
+	<text>&#160;</text>
+	<filerequest label="Backup-Datei" name="filename"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Upload" name="SUBMIT"/>
+    </actions>
+  </form>
+  <!-- ___Backup der Daten einspielen____________________________________ -->
+  
+
+
+
+
+  <!-- ___Backup der Daten erstellen_____________________________________ -->
+  <form name="DOWNLOADDATABACKUP" label="Paul Administration/Datenbackups/erstellen" group="PAULADMIN/DATABACKUP">
+
+    <docs>
+      <title>Backup der Daten erstellen</title>
+      <description>Hier können Sie ein Backup der Daten des Systems erstellen.</description>
+    </docs>
+
+    <components>
+	<text>&#160;</text>
+	<text>Drücken Sie auf den Download-Button um ein Backup</text>
+	<text>der Daten des Systems zu erstellen.</text>
+	<text>Das Backup wird ihnen automatisch zugesendet.</text>
+	<text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Download" name="SUBMIT"/>
+    </actions>
+  </form>
+  <!-- ___Backup der Daten erstellen_____________________________________ -->
+  
+
+  <!-- ___Backup der Daten einspielen____________________________________ -->
+  <form name="UPLOADDATABACKUP" label="Paul Administration/Datenbackups/einspielen" group="PAULADMIN/DATABACKUP">
+
+    <docs>
+      <title>Backup der Daten einspielen</title>
+      <description>Hier können Sie ein Backup der Daten des Systems einspielen.</description>
+    </docs>
+
+    <components>
+	<text>&#160;</text>
+	<text>Drücken Sie auf den Upload-Button um die ausgewählte</text>
+	<text>Backup-Datei der Daten des Systems einzuspielen.</text>
+	<text>&#160;</text>
+	<filerequest label="Backup-Datei" name="filename"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Upload" name="SUBMIT"/>
+    </actions>
+  </form>
+  <!-- ___Backup der Daten einspielen____________________________________ -->
+  
+
+  <!-- ___Updaten von Paul______________________________________________ -->
+  <form name="UPDATEPAUL" label="Paul Administration/Aktualisieren" group="PAULADMIN">
+
+    <docs>
+      <title>Aktualisieren von Paul</title>
+      <description>Klicken Sie auf den Update-Knopf um das neuste Service-Pack von Paul zu laden.</description>
+    </docs>
+
+    <components>
+	<text>&#160;</text>
+	<text>Klicken Sie auf den Update-Knopf um das neuste Service-Pack von Paul zu laden.</text>
+	<text>&#160;</text>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Updaten" name="SUBMIT"/>
+    </actions>
+
+  </form>
+  <!-- ___Backup der Daten_______________________________________________ -->
+  
+
+
+  <!-- ___Globale_Aliase_________________________________________________ -->
+  <form name="GLOBALALIASES"  label="Paul Administration/Globale Aliase" group="PAULADMIN">
+
+    <docs>
+      <title>Globale Aliase</title>
+      <description>Bitte weisen Sie den angegebenen Benutzern ein Alias zu.</description>
+      <help name="MailAliasRoot">Username an den Meldungen für Root geschickt werden sollen.</help>
+      <help name="MailAliasPostmaster">Username an den Meldungen für Postmaster geschickt werden sollen.</help>
+      <help name="MailAliasFaxmaster">Username an den Faxe ohne korrekten Empfänger geschickt werden sollen.</help>
+    </docs>
+
+    <components>
+      <text>Aliase für folgende Benutzer</text>
+       <inputfield label="Root" name="MailAliasRoot" cimproperty="MailAliasRoot"/>
+       <inputfield label="Postmaster" name="MailAliasPostmaster" cimproperty="MailAliasPostmaster"/>
+       <inputfield label="Faxmaster" name="MailAliasFaxmaster" cimproperty="MailAliasFaxmaster"/>
+    </components>
+
+    <actions>
+      <cimget/>
+      <cimset/>
+      <submit label="Ok" name="SUBMIT"/>
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Globale_Aliase_________________________________________________ -->
+
+
+  
+  <!-- ___Netzdaten______________________________________________________ -->
+  <form name="SYSTEMSETTINGS" label="Paul Administration/Systemeinstellungen" group="PAULADMIN">
+
+    <docs>
+      <title>Systemeinstellungen</title>
+      <description>Bitte geben Sie hier alle Einstellungen Ihres Systems an.</description>
+      <help name="InetAddr">Eigene IP-Adresse</help>
+      <help name="Mask">Die Netzwerkmaske Ihrer IP-Adresse bzw. des Subnetzes, welches Sie verwalten wollen</help>
+      <help name="MyDomain">Der Name Ihrer Domäne</help>
+    </docs>
+
+    <components>
+      <inputIP label="IP" name="InetAddr" cimproperty="InetAddr"/>
+      <inputIP label="Netzwerkmaske" name="Mask" cimproperty="Mask"/>
+      <inputfield label="Domäne" name="MyDomain" cimproperty="MyDomain"/>
+    </components>
+
+    <actions>
+      <cimget />
+      <cimset />
+      <submit label="Ok" name="SUBMIT" />
+      <reset label="Reset" name="reset" />
+    </actions>
+
+  </form>
+  <!-- ___Netzdaten______________________________________________________ -->
+
+
+
+  <!-- ___Statistiken___________________________________________________ -->
+  <form name="WEBSTATISTICS" label="Statistiken"  group="">
+
+    <docs>
+      <title>Statistiken</title>
+      <description>Statistiken über Paul.</description>
+    </docs>
+
+    <components>
+    	<text>Bitte wählen Sie einen der unteren Links aus, um die Statistiken anzeigen zu lassen</text>
+	<externalLink src="http://www.heise.de">Heise</externalLink>
+	<externalLink src="http://id-pro.de">Better (than) sex!</externalLink>
+	<externalLink src="http://www.microsoft.de">NO NO NO, not this one!!!</externalLink>
+    </components>
+
+    <actions>
+    </actions>
+
+  </form>
+  <!-- ___Statistiken____________________________________________________ -->
+
+
+</paula>

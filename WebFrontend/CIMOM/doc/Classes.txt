@@ -1,0 +1,1261 @@
+This file lists the properties of the "PaulA_" classes with some
+explanation on what they are for, which data type they are, where they
+are changed in the system etc.
+This is all designed to fit a specifc system, "paul", which should have
+run a RedHat 6.2 distribution with a some special adaptions and
+additional stuff.
+But maybe this helps you understand the providers which already exist
+in PaulA/lib/PaulA/Provider/paul.
+
+			************************
+			  PaulA_Administration
+			************************
+
+Note: No provider yet.
+
+* BackupMailAddress
+  *****************
+  - "send backup to"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - which file?
+    - what kind of backup? Configuration or data or both? 
+
+* BackupInterval
+  **************
+  - "Backup interval (in days)"
+  - scalar/uint16
+  - readwrite
+  - COMMENTS:
+    - which file?
+    - write script which checks daily:
+      "0 0 * * * checkdate -d 6 command args"
+
+
+
+* Extrinsic Method: BackupConfiguration
+  *************************************
+  - "Make backup of Paul-Configuration"
+  - Returns: filename or CIM::ERROR
+
+  
+* Extrinsic Method: RestoreConfiguration
+  **************************************
+  - "Restore Paul-Configuration from backup"
+  - Parameter: "filename" (scalar/string)
+
+
+* Extrinsic Method: BackupData
+  ****************************
+  - "Make backup of Data"
+  - Returns: filename or CIM::ERROR
+
+
+* Extrinsic Method: RestoreData
+  *****************************
+  - "Restore Data from backup"
+  - Parameter: "filename" (scalar/string)
+
+
+* Extrinsic Method: UpdatePaul
+  ****************************
+  - "Update of Paul"
+  - ?!
+
+
+
+
+=============================================================================
+
+
+			**************
+			  PaulA_DHCP
+			**************
+
+* DHCPEnabled
+  ***********
+  - turn on/off
+  - scalar/boolean
+  - readwrite
+    - read:
+	- commands:
+	/etc/rc.d/init.d/dhcpd status	->  exit value: 0/1
+	chkconfig --list dhcpd	->
+	    "dhcpd 0:off 1:off 2:off 3:on 4:on 5:on 6:off" or
+	    "dhcpd 0:off 1:off 2:off 3:off 4:off 5:off 6:off"
+
+	Beware: if only one level is on, we will return "true", as we
+	use "grep" for the checking. 
+
+    - write:
+	- commands:
+	turn on:
+	/etc/rc.d/init.d/dhcpd start
+	chkconfig dhcpd on
+	turn off:
+	/etc/rc.d/init.d/dhcpd stop
+	chkconfig dhcpd off
+	(chkconfig --level 0123456 dhcpd off	
+	    if you want to be really sure)
+
+  - COMMENTS:
+
+
+* Ranges
+  ******
+  - "IP-adresses"
+    Array with IP-adress ranges (and/or single IP-adresses)
+    e.g. [ '1.2.3.4', '1.2.3.4-1.2.3.10', ... ]
+  - Array/string
+  - readwrite
+    - required (if Enabled = true, right now it's always required)
+  - COMMENTS:
+    - lines "range dynamic-bootp 1.2.3.4 1.2.3.10" in /etc/dhcpd.conf
+    - Activation: "/etc/rc.d/init.d/dhcpd restart"
+
+* HostMappings
+  ************
+  - "Static Adresses"
+    all host mappings (IP-adresses to MAC-adresses)
+    e.g. [ '00:10:dc:b0:29:2a-1.2.3.4', ... ]
+  - Array/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - lines "host $IP { hardware ethernet $MAC; }" in /etc/dhcpd.conf
+    - Activation: "/etc/rc.d/init.d/dhcpd restart"
+
+* DomainNameServers
+  *****************
+  - "DNS-server"
+    all listed name servers
+  - Array/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - lines "option domain-name-servers $IP;" in /etc/dhcpd.conf
+    - Activation: "/etc/rc.d/init.d/dhcpd restart"
+
+* Routers
+  *******
+  - "Default gateway"
+  - scalar/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - line "option routers $IP;" in /etc/dhcpd.conf
+    - Activation: "/etc/rc.d/init.d/dhcpd restart"
+
+
+Right now, this works if there is only one subnet section in
+/etc/dhcpd.conf. 
+For more subnets more properties have to be introduced to store the
+subnet and the corresponding netmask.
+
+
+=============================================================================
+
+
+			*************
+			  PaulA_Fax
+			*************
+
+
+* FaxEnabled
+  **********
+  - turn the faxsystem on/off
+  - scalar/boolean
+  - readwrite
+    read:
+    are the following entries in "/etc/inittab":
+      capi:2345:respawn:/usr/sbin/capircvd -D 1 -L /var/log/capirvd
+      fr:2345:respawn:/usr/local/bin/c2faxrecv
+    write:
+    - write/delete in "/etc/inittab":
+      capi:2345:respawn:/usr/sbin/capircvd -D 1 -L /var/log/capirvd
+      fr:2345:respawn:/usr/local/bin/c2faxrecv
+    - killall -9 capircvd   
+    - killall -9 c2faxrecv
+    - killall -HUP init
+  - COMMENTS:
+    killall -9 may be called, too, when turning fax on, because 
+    ERROR ONWRITE="false"
+
+
+* HeaderIDString
+  **************
+  - Text for the fax header
+  - scalar/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /var/spool/fax/etc/config.faxCAPI
+      line "LocalIdentifier: <TEXT>"
+      (important: no quotes around <TEXT>!)
+    - whitespaces in the text are allowed
+    - OPTIONAL_ASSIGNMENT
+
+* HeaderFaxNumber
+  ***************
+  - "Fax-number" (as sender fax number in fax header)
+  - scalar/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /var/spool/fax/etc/config.faxCAPI
+      line "FAXNumber: <TEXT>"
+      (important: no quotes around <TEXT>!)
+    - This Number should have the format: "+49.228.42154300".
+      Right now, this is not checked.
+    - OPTIONAL_ASSIGNMENT
+
+* CountryCode
+  ***********
+  - Country code (e.g. '49')
+  - scalar/uint16
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/capircvd/capircvd.conf
+      Entry "iprefix <CODE>" in section "=global"
+    - maybe in future:
+      additional writing of this property to file
+      "/var/spool/fax/etc/config.faxCAPI",
+      line: "CountryCode: <CODE>"
+    - write before Prefix
+
+* AreaCode
+  ********
+  - Area-Code (e.g. '228')
+  - scalar/uint16
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/capircvd/capircvd.conf
+      Entry "nprefix <CODE>" in section "=global"
+    - maybe in future:
+      additional writing of this property to file
+      "/var/spool/fax/etc/config.faxCAPI",
+      line: "AreaCode: <CODE>"
+    - write before Prefix
+
+* BaseNumber
+  **********
+  - For telephone systems ("Anlagenanschluss") the systems number
+    (e.g. '42154'),
+    for single phone numbers ("Basisanschluss") nothing ('').
+  - scalar/uint16
+  - readwrite
+    - optional
+    read:	-> Prefix
+    write:	-> Prefix 
+  - COMMENTS:
+    - file /etc/capircvd/capircvd.conf
+      write line "prefix <PREFIX>" with:
+         $PREFIX = $iprefix . $nprefix . <INPUT>
+      ------------(snipp)------------
+      =global
+      iprefix         49
+      nprefix         228
+
+      =controller1
+      prefix          4922842154
+      ------------(snipp)------------
+
+* Prefix
+  ******
+  - CountryCode + Area-Code + BaseNumber
+  - scalar/uint32
+  - readwrite
+    - optional
+  - COMMENTS:
+      - "private" property, not visible in frontend
+      - file: /etc/capircvd/capircvd.conf
+	Entry "prefix <CODE>" in section "=controller1"
+      - Prefix has to be written last
+
+* NumLength
+  *********
+  - Length of fax numbers including the extensions
+  - scalar/uint16
+  - readwrite
+    - optional
+  - COMMENTS:
+      - "private" property, not visible in frontend
+      - file: /etc/capircvd/capircvd.conf
+	Entry "numlength <CODE>" in section "=controller1"
+
+* ValidFaxExtensions
+  ******************
+  - List of valid fax numbers, extensions or MSN.
+    For telephone systems ("Anlagenanschluss") the extensions, 
+    e.g. [ 301, 302, 310 ], for simple numbers the complete MSNs 
+    [42154300, 99999555, 99999556 ]. 
+  - Array/uint32
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/capircvd/capircvd.conf
+      For every fax number an entry like:
+      ------------------(snipp)----------------------
+      
+      =<PREFIX><NUMBER>
+      mode            fax
+      delay           1
+      handler         /usr/local/bin/capi.faxrcvd.pl
+      recipient       wuebben@dummy@localhost
+      mailformat      inline_jpeg
+      ------------------(snapp)----------------------
+      where <PREFIX> is the property "Prefix" and <NUMBER> is the fax
+      extension or MSN.
+    - All array elements must have the same length.
+    - write: we delete first all sections with "mode fax" and
+      then write all the new sections.
+      Otherwise it gets more complicated if e.g. the length of the fax
+      extension changes.
+    - "numlenght" has to be written, too, after changing the
+      extensions.
+
+
+* DefaultMailForward
+  ******************
+  - send all facsimiles which aren't mapped in /etc/postfix/virtual 
+    to this adress.
+  - scalar/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/postfix/aliases
+      Similar to the property postmaster in PaulA_MTA,
+      name: fax_default?
+
+
+
+general:
+
+   - file /usr/local/bin/capi.faxrcvd.pl -> script for conversion 
+      "fax to alias"
+
+   - call "postmap" and "postfix reload"
+     shouldn't be necessary, as the fax system doesn't use postfix
+
+   - The properties are all optional right now.
+     Strictly this is only correct for BaseNumber, IPrefix and NPrefix
+     should be required if fax is enabled.
+
+
+=============================================================================
+
+
+			*******************
+			  PaulA_WWWFilter
+			*******************
+
+
+* FilterEnabled
+  *************
+  - "filter baner adds?
+  - scalar/boolean
+  - readwrite
+    read: 
+	    "chkconfig --list junkbuster" 
+	and "/etc/rc.d/init.d/junkbuster status"
+    write:
+	- stop/start daemon and edit the runlevels:
+	  "/etc/rc.d/init.d/junkbuster stop/start"
+	  "chkconfig junkbuster on/off"
+
+	+ change of junkbuster and squid ports:
+	- "Filter adds for erverybody" (=> configure squid to
+	  port 3129, junkbuster to port 3128) or "Filter on non
+	  standart port"
+	- /etc/junkbuster/config: ... (1 or 2 lines)
+	- /etc/junkbuster/forward:  "localhost <PORTNR>"
+
+	+ cron Entries:
+	- copy files junkbuster.weekly and junkbuster.monthly
+	  to /etc/cron.weekly/ or cron.monthly 
+	  (alternative: always keep the files there, don't care for
+	  the bit of maybe unnecessary download)
+
+  - COMMENTS:
+
+* BlockList
+  *********
+  - "List of blocked sites"
+  - Array/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/junkbuster/blocklist.local
+    - restart of daemon _not_ necessary after changes to
+      blocklist.local
+      but /etc/junkbuster/blocklist has to be generated again
+
+* Extrinsic Method: DownloadBlockList
+  ***********************************
+  - "Download blocklist"
+    - junkbuster.weekly
+
+
+
+
+=============================================================================
+
+
+			******************
+			  PaulA_Firewall
+			******************
+
+* TelnetEnabled
+  *************
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - ipchains
+
+* SSHEnabled
+  **********
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - ipchains
+  
+* PingEnabled
+  ***********
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - ipchains
+  
+* RealAudioVideoEnabled
+  **********************
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - ipchains
+
+* NewsEnabled
+  ***********
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - ipchains
+
+
+- file: /etc/packetfilter 
+- Order of entries is important!
+  We could find the correct positions with an 'echo "something
+  stupid"' as marker.
+
+- Add ICQ and/or IRC?
+
+
+=============================================================================
+
+
+			***************
+			  PaulA_Group
+			***************
+
+
+* Key-Property: Name
+  ******************
+  - Name of the Group
+  - scalar/string, Key-Property
+  - readonly
+    Lesend: Enumerate => the various sections in groups.paula
+  - COMMENTS:
+
+* Permissions
+  ***********
+  - "is a menber of this group allowed to read/write SomethingSpecial?"
+  - Array/string
+  - readwrite
+    read: an array like [ "ADMINADMIN_r, REBOOT_r, ... ]"
+    write: write array to /etc/percimon/groups.paula
+	    At the moment no check for valid values
+  - COMMENTS:
+	- change file format?
+
+
+
+=============================================================================
+
+
+			***************
+			  PaulA_HTTPD
+			***************
+
+
+* ServerName
+  **********
+  - (from the "Intranet"-Menu)
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/http/conf/httpd.conf
+    - Activation: /etc/rc.d/init.d/httpd restart
+
+  
+=============================================================================
+
+
+			*************
+			  PaulA_ISP
+			*************
+
+* ProviderTelephoneNumber
+  ***********************
+  - "phone number of provider"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - which file?
+
+* MSN
+  ***
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - which file?
+
+* Login
+  *****
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/ppp/pap-secrets (?)
+
+* Password
+  ********
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/ppp/pap-secrets (?)
+
+* LocalAddress
+  ************
+  - "your own IP adress"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - /ect/ppp/ioptions (?)
+
+* RemoteAddress
+  *************
+  - "Provider IP adress"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - /ect/ppp/ioptions (?)
+
+* DNS
+  ***
+  - "DNS"
+  - Array/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/resolve.conf (?)
+    - probably 2 DNS, which are used if IP allocation isn't dynamic.
+
+* DynamicIPAllocation
+  *******************
+  - "IP allocation static/dynamic?"
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - which file?
+    - really IP allocation? Or was it DNS allocation?
+
+
+=============================================================================
+
+
+			****************************
+			  PaulA_IncomingMailServer
+			****************************
+
+
+* Key-Property: ServerName
+  ************************
+  - Server name resp. IP adress
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+
+* Key-Property: Login	
+  *******************
+  - scalar/string
+  - readwrite
+    - not required (no Login when using protocol ETRN)
+  - COMMENTS:
+
+* Password
+  ********
+  - scalar/string
+  - readwrite
+    - not required (no Login when using protocol ETRN)
+  - COMMENTS:
+
+* Protocol
+  ********
+  - "POP3", "POP3-Multidrop" or "ETRN"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - ETRN:  e.g. "poll <SERVER> proto ETRN;"
+    - POP3:  e.g. "poll <SERVER> proto pop3 user <LOGIN> pass "<PASSWD>";
+    - Multi: e.g. "poll <SERVER> localdomains <?????> proto pop3 
+                   user <LOGIN> pass "<PASSWD>" to * here"
+
+* LocalDomain
+  ***********
+  - scalar/string   # maybe Array required?
+  - readwrite
+  - COMMENTS:
+    - what does the fetchmail option "localdomains" _really_ do?
+
+* Extra_Envelope
+  **************
+  - value for the fetchmail option "envelope"
+  - scalar/string  
+  - readwrite
+  - COMMENTS:
+    - may be necessary to set for multidrop
+
+* Extra_QVirtual
+  **************
+  - value for the fetchmail option "qvirtual"
+  - scalar/string  
+  - readwrite
+  - COMMENTS:
+    - may be necessary to set for multidrop
+
+
+- file: ~/.fetchmailrc, permissinons: -rw-------
+- We will end all entries with ";" (easier for writing providers).
+- _No_ commands are necessary to activate changes infetchmailrc
+
+
+=============================================================================
+
+
+			****************************
+			  PaulA_OutgoingMailDomain
+			****************************
+
+* Key-Property: Domain
+  ********************
+  - Domain Name
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+
+* ServerName
+  **********
+  - "Servername"
+  - scalar/string
+  - readwrite
+    - required
+  - COMMENTS:
+
+- file: /etc/postfix/transport
+- lines: 
+	foo.org	    :[gateway.foo.org]
+	.foo.org    :[gateway.foo.org]
+- Activation:	postmap /etc/postfix/transport
+	      +	postfix reload
+
+
+
+
+=============================================================================
+
+
+			**************
+			  PaulA_Mail
+			**************
+
+
+* MailWeekdaysStart
+  *****************
+  - Mailoptionen weekdays: starting time
+  - scalar/uint16
+  - readwrite
+  - COMMENTS:
+    - file: pcron.conf 
+
+* MailWeekdaysEnd
+  ***************
+  - Mailoptionen weekdays: stopping time
+  - scalar/uint16
+  - readwrite
+  - COMMENTS:
+    - file: pcron.conf 
+
+* MailWeekdaysInterval
+  ********************
+  - Mailoptionen weekdays: Intervall in minutes
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: pcron.conf 
+
+* MailOptsWeekend Start/End/Interval (similar to Weekdays)
+  ***************
+  [...]
+
+* FetchMailsOnDialUp
+  ******************
+  - Whether mails will be fetched on dialup or not.
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - file: /etc/ppp/ip-up.local
+
+
+* Extrinsic Method: FetchMails
+  ****************************
+  - "fetch mails"
+
+
+
+Path to pcron.conf?
+
+
+=============================================================================
+
+
+			*************
+			  PaulA_MTA
+			*************
+
+
+* ValidDistributionLists
+  **********************
+  - all existing distribution lists
+  - Array/string
+  - readwrite
+    - optional 
+    write: if the entry contains no "@", "@" plus $MyDomain will be
+    added.
+  - COMMENTS:
+    - file: /etc/postfix/dlists.virtual
+    - line: "marketing@coffins.de lluke, mmouse, ..."
+    - Activation: postmap /etc/postfix/dlists.virtual
+		+  postfix reload
+    
+* MailAliasRoot
+  *************
+  - Mail-Alias for "root"
+  - scalar/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/postfix/aliases
+    - Activation: postmap /etc/postfix/aliases
+		+  postfix reload
+    - Help text should tell you that you have to write something here
+
+* MailAliasPostmaster
+  *******************
+  - Mail-Alias for "postmaster"
+  - scalar/string
+  - readwrite
+    - required
+  - COMMENTS:
+    - file: /etc/postfix/aliases
+    - Activation: postmap /etc/postfix/aliases
+		+  postfix reload
+    - Value at the beginning: root
+
+* MailAliasFaxmaster
+  ******************
+  - mail alias for status mails to the faxmaster
+  - scalar/string
+  - readwrite
+    - required
+  - COMMENTS:
+    - file: /etc/postfix/aliases
+    - Entry similar to postmaster.
+    - Activation: postmap /etc/postfix/aliases
+		+  postfix reload
+    - Value at the beginning: root
+
+* MyDomain
+  ********
+  - $mydomain of postfix
+  - scalar/string
+  - readwrite
+    - required (could be optional, but the default value isn't easy to
+      find
+  - COMMENTS:
+    - file: /etc/postfix/main.cf
+    - Activation: postfix reload
+    - When MyDomain is changed some properties from other classes
+      need to be changed, too.
+      
+* RelayHost
+  *********
+  - $relayhost of postfix
+    if set: direct mail delivery, else via given host
+  - scalar/string
+  - readwrite
+    - optional
+  - COMMENTS:
+    - file: /etc/postfix/main.cf
+    - Activation: postfix reload
+
+
+=============================================================================
+
+
+			*****************
+			  PaulA_RASUser
+			*****************
+
+* Key-Property: Login
+  *******************
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/ppp/pap-secrets
+
+* Password
+  ********
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/ppp/pap-secrets
+
+* MSN
+  ***
+  - "MSN of Users"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - which file?
+
+* IP
+  **
+  - "IP address assigned to the user"
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - which file?
+
+
+
+- RAS = "Remote Access Server"
+- MSN is a secondary number to a ISDN number.
+- might be, that the MSN isn't user related, maybe we can't find out
+  which user has which MSN. 
+  
+
+=============================================================================
+
+
+			***************
+			  PaulA_System
+			***************
+
+
+* ValidLoginShells
+  ****************
+  - all existing login shells
+  - Array/string
+  - readonly
+  - COMMENTS:
+
+
+* Extrinsic Method: Reboot
+  ************************
+  
+
+* Extrinsic Method: Halt
+  **********************
+
+
+* Extrinsic Method: CreateUser
+  ****************************
+  - only temporary CreateInstance substitute for PaulA_User
+  
+
+* Extrinsic Method: DeleteUser
+  ****************************
+  - only temporary DeleteInstance substitute for PaulA_User
+  
+
+
+=============================================================================
+
+
+			**************
+			  PaulA_User
+			**************
+
+
+* Key-Property: Login
+  *******************
+  - login name
+  - scalar/string, Key-Property
+  - readonly
+  - COMMENTS:
+  
+* RealName
+  ********
+  - name of user
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+  
+* Password
+  ********
+  - scalar/string
+  - writeonly
+  - COMMENTS:
+  
+* FaxExtensions	
+  *************
+  - all Fax extensions which are passes to users
+    e.g. [ 301, 302, 310 ]
+  - Array/uint16
+  - readwrite
+    read:
+    - returns all fax aliases, even when they are not valid
+    write:
+    - Error, if you try to write a non valid number 
+  - COMMENTS:
+    - File: /etc/postfix/virtual
+    - for every fax number a entry like:
+      654-gif-many@fax.devel-1.bonn.id-pro.net  <LOGIN>
+      or
+      654-gif-many@fax.devel-1.bonn.id-pro.net  <LOGIN_1>,<LOGIN_2>
+    - Activation: postmap /etc/postfix/virtual
+		+  postfix reload
+
+* HomeDirectory
+  *************
+  - where $HOME resides
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/passwd
+  
+* LoginShell
+  **********
+  - Loginshell of user
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+    - File: /etc/passwd
+    - *no* checking with PaulA_System::ValidLogionShells
+
+* WebAccess
+  *********
+  - wether the user is allowed to use the internet or not
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - File: /etc/squid/users
+
+* HasLocalHomepage
+  ****************
+  - wether the user has his own homepage or not
+  - scalar/boolean
+  - readwrite
+    read: does the homepage directory exist? (Argh)
+    write: "true"  => create directory
+	    "false" => delete directory?!
+  - COMMENTS:
+    - name of directory?
+    - should write "false" delete or move?
+    - maybe do something else entirely?
+    
+* MailForward
+  ***********
+  - mail adress to forward mail to
+  - scalar/string
+  - readwrite
+    read: undef or a mail adress
+    write: empty/undef	=> turn off forwarding
+	   else		=> turn on forwarding with the given mail
+			   adress
+  - COMMENTS:
+    - File: ~/.forward 
+  
+* AutoReply
+  *********
+  - turn autoreply/vacation messaging on/off
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - create ~/.vacation.*
+  
+* ReplyText
+  *********
+  - text used for autoreply
+  - scalar/string
+  - readwrite
+    Schreibend: undef => delete ~/.vacation 
+		sonst => create ~/.vacation with appropriate contents
+  - COMMENTS:
+    - ~/.vacation.msg
+
+* PrivatePopServer
+  ****************
+  - server name of the private mail account
+  - scalar/string
+  - readwrite
+    Schreibend: 3x undef => delete ~/.fetchmailrc
+		else    => create ~/.fetchmailrc 
+  - COMMENTS:
+    - file ~/.fetchmailrc
+    - add entry to crontab 
+
+* PrivatePopLogin
+  ***************
+  - Login name of the private mail accounts
+  - scalar/string
+  - readwrite
+     default: the users login name
+  - COMMENTS:
+  
+* PrivatePopPassword
+  ******************
+  - Password of private mail accounts
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+
+* MailAliases
+  ***********
+  - All mail aliases of the user
+  - Array/string
+  - readwrite
+  - COMMENTS:
+    - only aliases, not the "real" address
+    - an alias is a complete mail adress incl. domain part
+    - without fax number (which is strictly seen an alias)
+    - enter in /etc/postfix/virtual eingetragen as "alias.name@domain.de user" 
+    - Activation: postmap /etc/postfix/virtual
+		+  postfix reload
+    
+* DistributionLists
+  *****************
+  - All distribution lists the user belongs to.
+  - Array/string
+  - readwrite
+  - COMMENTS:
+    - file: /etc/postfix/dlists.virtual
+    - Activation: postmap /etc/postfix/dlists.virtual
+		+  postfix reload
+    - line: "marketing@coffins.de lluke, mmouse, ..."
+
+* PaulAGroups
+  ***********
+  - All PaulA-groups the user belongs to.
+  - Array/string
+  - readwrite
+  - COMMENTS:
+    - File: /etc/percimon/groups.paul 
+
+* PaulAPermissions
+  ****************
+  - a "best of" the users PaulA permissions
+  - Array/string
+  - readonly
+    Lesend: an array like [ "ADMINADMIN_r, REBOOT_r, ... ]"
+	    is combined from PaulAGroups and the entries in
+	    /etc/percimon/groups.paula 
+  - COMMENTS:
+    - File: /etc/percimon/groups.paul 
+    - order of the letter has to be fixed, e.g. n<r<w, y<n
+
+ 
+* Extrinsic Method: Authenticate
+  ******************************
+  - for authentification (e.g. via PAM)
+
+
+
+=============================================================================
+
+
+			*************
+			  PaulA_VPN
+			*************
+
+
+* VPNEnabled
+  **********
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - read:
+	- commands:
+	/etc/rc.d/init.d/vpnd status	->  exit value: 0/1
+	chkconfig --list vpnd	->
+	    "vpnd 0:off 1:off 2:off 3:on 4:on 5:on 6:off" or
+	    "vpnd 0:off 1:off 2:off 3:off 4:off 5:off 6:off"
+
+	Beware: if only one level is on, we will return "true", as we
+	use "grep" for the checking. 
+
+    - write:
+	- commands:
+	on:
+	/etc/rc.d/init.d/vpnd start
+	chkconfig vpnd on
+	off:
+	/etc/rc.d/init.d/vpnd stop
+	chkconfig vpnd off
+	(chkconfig --level 0123456 vpnd off	
+	    if you want to be really sure)
+    
+* ServerIP
+  ********
+  - "remote real IP adress"
+  - scalar/string
+  - readwrite
+    - should be required if VPND is on
+	at the moment: required, but "" allowed
+  - COMMENTS:
+    - file: /etc/vpnd/vpnd.conf
+    - line "server <IP> <PORT>"
+      (see "ServerPort" for  <PORT>)
+
+* ServerPort
+  **********
+  - "server port"
+  - scalar/string
+  - readwrite
+    - should be required if VPND is on
+	at the moment: required, but "" allowed
+  - COMMENTS:
+    - file: /etc/vpnd/vpnd.conf
+
+* Remote
+  ******
+  - "remote private IP adress"
+  - scalar/string
+  - readwrite
+    - should be required if VPND is on
+	at the moment: required, but "" allowed
+  - COMMENTS:
+    - file: /etc/vpnd/vpnd.conf
+    - line "remote <IP>"
+    - Change -> change RouteLocalNetwork too, if TRUE
+
+* Local
+  *****
+  - "local private IP adress"
+  - scalar/string
+  - readwrite
+    - should be required if VPND is on
+	at the moment: required, but "" allowed
+  - COMMENTS:
+    - file: /etc/vpnd/vpnd.conf
+    - line "local <IP>"
+
+* IsServer	(aka "Mode")
+  ********
+  - Mode "client" or "server"
+  - scalar/boolean
+  - readwrite
+    - should be required if VPND is on
+	at the moment: required, but "" allowed
+  - COMMENTS:
+    - file: /etc/vpnd/vpnd.conf
+    - affected lines:
+      "mode server" resp. "mode client"
+      "keyfile vpnd.lcl.key" resp. "keyfile vpnd.rmt.key"
+
+* RouteLocalNetwork
+  *****************
+  - scalar/boolean
+  - readwrite
+  - COMMENTS:
+    - file: /etc/vpnd/vpnd.conf
+    - line "route1 <IP> <MASK> <REMOTE>"
+      with: <IP> calculated from
+	    a) the value of "addr" in in the "eth0"-section of ifconfig output
+	    b) the value of "Mask" in in the "eth0"-section of ifconfig output
+		  => "ipcalc --network <a> <b>"
+		  (or implement the conversion yourself)
+	    <MASK> the value of "Mask" in the "eth0"-sektion of ifconfig output
+	    <REMOTE> the value of property "Remote"
+
+
+
+* InetAddr
+  *******
+* Mask
+  ****
+  - COMMENTS:
+    here as read only properties, because they are needed for the
+    calculation of RouteLocalNetwork
+
+
+- Activation: /etc/rc.d/init.d/vpnd restart
+
+
+
+=============================================================================
+
+
+			******************
+			  PaulA_Instance
+			******************
+
+Auxiliary class. Will be removed as soon as the methods CreateInstance
+and DeleteInstance are ready.
+
+* Create_Group                  
+  *************************
+  - Array/string
+
+* Delete_Group                  
+  *************************
+  - scalar/string
+
+* Create_RASUser                
+  *************************
+  - Array/string
+
+* Delete_RASUser                
+  *************************
+  - scalar/string
+
+* Create_IncomingMailServer     
+  *************************
+  - Array/string
+
+* Delete_IncomingMailServer     
+  *************************
+  - scalar/string
+
+* Create_OutgoingMailDomain
+  *************************
+  - Array/string
+
+* Delete_OutgoingMailDomain
+  *************************
+  - scalar/string
+
+=============================================================================
+
+
+			***************
+			  PaulA_
+			***************
+
+
+* 
+  *******
+  - scalar/string
+  - readwrite
+  - COMMENTS:
+

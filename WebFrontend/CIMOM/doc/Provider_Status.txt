@@ -1,0 +1,221 @@
+
+
+PaulA_Administration	0%
+********************
+
+* BackupMailAddress			    0
+* BackupInterval			    0
+* Extrinsic Method: BackupConfiguration	    0
+* Extrinsic Method: RestoreConfiguration    0
+* Extrinsic Method: BackupData		    0
+* Extrinsic Method: RestoreData		    0
+* Extrinsic Method: UpdatePaul		    0
+
+=========================================
+
+
+PaulA_DHCP	99%
+**********
+
+* DHCPEnabled		100
+* Ranges		100
+* HostMappings		100
+* DomainNameServers	100
+* Routers		100
+
+
+=========================================
+
+PaulA_Fax    99%
+*********
+
+* FaxEnabled		100
+* HeaderIDString	100
+* HeaderFaxNumber	100
+* CountryCode		100
+* AreaCode		100
+* BaseNummer		100
+* Prefix		100
+* NumLength		100
+* DefaultMailForward	100
+* ValidFaxExtensions	100
+
+=========================================
+
+PaulA_WWWFilter	    100%
+***************
+
+* FilterEnabled				100
+* BlockList				100
+* Extrinsic Method: DownloadBlockList	100
+
+=========================================
+
+PaulA_Firewall	    10% 
+**************
+
+* TelnetEnabled		    50
+* SSHEnabled		    0
+* PingEnabled		    0
+* RealAudioVideoEnabled	    0
+* NewsEnabled		    0
+
+=========================================
+
+PaulA_Group	100%
+***********
+
+* Key-Property: Name	100
+* Permissions		100
+
+=========================================
+
+PaulA_HTTPD	100%
+***********
+
+* ServerName	100
+
+=========================================
+
+PaulA_ISP	0%
+*********
+(Klasse/Properties müssen noch verändert werden)
+
+* ProviderTelephoneNumber   0
+* MSN			    0
+* Login			    0
+* Password		    0
+* LocalAddress		    0
+* RemoteAddress		    0
+* DNS			    0
+* DynamicIPAllocation	    0
+
+=========================================
+
+PaulA_IncomingMailServer	~50%
+************************
+Hier gibts Probleme mit fetchmail: was tut es eigendlich _genau_?
+Was passiert mit den MailAliases, die wir gesetzt haben?
+
+* Key-Property: ServerName	50
+* Key-Property: Login		50
+* Password			50
+* Protocol			50
+* LocalDomain			50
+* Extra_Envelope		50
+* Extra_QVirtual		50
+
+- script nötig, das fetchmail ausführt    0?
+
+=========================================
+
+PaulA_OutgoingMailDomain    100%
+************************
+
+* Key-Property: Domain	    100
+* ServerName		    100
+
+=========================================
+
+PaulA_Mail	99%
+**********
+
+* MailWeekdaysStart		100
+* MailWeekdaysEnd		100
+* MailWeekdaysInterval		100
+* MailWeekendStart		100
+* MailWeekendEnd		100
+* MailWeekendInterval		100
+* FetchMailsOnDialUp		100
+* Extrinsic Method: FetchMails	100
+
+=========================================
+
+PaulA_MTA	95%
+*********
+
+* ValidDistributionLists	100
+* MailAliasRoot			100
+* MailAliasPostmaster		100
+* MailAliasFaxmaster		100
+* MyDomain			100
+* RelayHost			100
+
+=========================================
+
+PaulA_RASUser	0%
+************
+
+* Key-Property: Login	0
+* Password		0
+* MSN			0
+* IP			0
+
+=========================================
+
+PaulA_System	60%
+************
+
+* ValidLoginShells		    100
+* Extrinsic Method: Reboot	    0
+* Extrinsic Method: Halt	    0
+* Extrinsic Method: CreateUser	    100
+* Extrinsic Method: DeleteUser	    99
+
+=========================================
+
+PaulA_User	100%
+**********
+
+* Key-Property: Login	            100
+* RealName		            100	
+* Password		            100
+* FaxExtensions		            100
+* HomeDirectory		            100
+* LoginShell		            100
+* WebAccess		            100
+* HasLocalHomepage	            100
+* MailForward		            100
+* AutoReply			    100
+* ReplyText			    100
+* PrivatePopServer		    100
+* PrivatePopLogin		    100
+* PrivatePopPassword		    100
+* MailAliases			    100
+* DistributionLists		    100
+* PaulAGroups			    100
+* PaulAPermissions		    100	    
+* Extrinsic Method: Authenticate    100  
+
+=========================================
+
+PaulA_VPN   99%
+*********
+
+* ServerIP		100
+* ServerPort		100
+* Remote		100
+* Local			100
+* IsServer		100
+* RouteLocalNetwork	100
+* VPNEnabled		100
+
+Nur lesend (erscheinen nicht im Frontend):
+* InetAddr		100
+* Mask			100
+
+=========================================
+
+PaulA_Instance		50%
+**************
+
+* Create_Group			90
+* Delete_Group			100
+* Create_RASUser		0
+* Delete_RASUser		0
+* Create_IncomingMailServer	0
+* Delete_IncomingMailServer	0
+* Create_OutgoingMailDomain	100
+* Delete_OutgoingMailDomain	100
+
+

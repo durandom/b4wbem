@@ -1,0 +1,4 @@
+
+myhostname = devel-1.bonn.id-pro.net
+mydomain = devel-1.bonn.id-pro.net
+relayhost=[smtp1.bonn.id-pro.net]

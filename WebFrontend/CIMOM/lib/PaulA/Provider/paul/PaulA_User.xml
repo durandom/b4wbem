@@ -1,0 +1,380 @@
+<!DOCTYPE PAULA_CONFIG SYSTEM "../provider.dtd" [
+
+<!ENTITY passwd           "/etc/passwd"                              >
+<!ENTITY group            "/etc/group"                               >
+<!ENTITY rights           "/etc/percimon/PaulA/groups.paula"         >
+<!ENTITY virtual          "/etc/postfix/virtual"                     >
+<!ENTITY dlists           "/etc/postfix/dlists.virtual"              >
+<!ENTITY postmap_dlists   "| postmap /etc/postfix/dlists.virtual"    >
+<!ENTITY postmap_aliases  "| postmap /etc/postfix/virtual"           >
+<!ENTITY postfix_reload   "| postfix reload"                         >
+<!ENTITY webaccess        "/etc/squid/users"                         >
+
+]>
+
+<PAULA_CONFIG>
+
+  <!-- ******************** -->
+  <!-- **** PROPERTIES **** -->
+  <!-- ******************** -->
+
+
+  <!-- *************** -->
+  <PROPERTY ID="Password">
+    <INOUT SECTION="s1" HANDLE="passwd">  <!-- dummy handle, in fact PAM -->
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- *************** -->
+  <PROPERTY ID="RealName">
+    
+    <IN SECTION="s1" HANDLE="passwd">
+      <REQUIRED_ASSIGNMENT/>
+      <INTERNAL>(split ':')[4]</INTERNAL>
+    </IN>
+
+    <OUT SECTION="s1" HANDLE="passwd">
+      <REQUIRED_ASSIGNMENT/>
+      <REGEXP>^((?:.*?:){4})(.*?)(:.*)</REGEXP>
+    </OUT>
+
+  </PROPERTY>
+
+  <!-- ******************* -->
+  <PROPERTY ID="FaxExtensions"
+	    MIGHT_BE_NULL="true">
+    <INOUT HANDLE="virtual">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ******************** -->
+  <PROPERTY ID="HomeDirectory">
+    <INOUT SECTION="s1" HANDLE="passwd">
+      <REQUIRED_ASSIGNMENT/>
+      <REGEXP>^((?:.*?:){5})(.*?)(:.*)</REGEXP>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ***************** -->
+  <PROPERTY ID="LoginShell">
+
+    <IN SECTION="s1" HANDLE="passwd">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </IN>
+
+    <OUT SECTION="s1" HANDLE="passwd">
+      <REQUIRED_ASSIGNMENT/>
+      <REGEXP>(.*:)(.*?)()$</REGEXP>
+    </OUT>
+
+  </PROPERTY>
+
+  <!-- **************** -->
+  <PROPERTY ID="WebAccess">
+    <INOUT HANDLE="webaccess">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- ********************** -->
+  <PROPERTY ID="HasLocalHomepage"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="dummy">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+
+  <!-- ***************** -->
+  <PROPERTY ID="MailForward"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="forward">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- *************** -->
+  <PROPERTY ID="AutoReply"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="forward">
+<!--      <FLAG DEFAULT="0"-->
+<!--            VALUE="1"-->
+<!--            TEXT="bla" />  -->
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- *************** -->
+  <PROPERTY ID="ReplyText"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="replytext">
+    </INOUT>
+  </PROPERTY>
+
+
+  <!-- ****************** -->
+  <!-- ** private mail ** -->
+  <!-- ****************** -->
+  
+  <!-- ********************** -->
+  <PROPERTY ID="PrivatePopServer"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+      <IN_DEP PROPERTY="PrivatePopLogin" />
+      <IN_DEP PROPERTY="PrivatePopPassword" />
+      <OUT_DEP PROPERTY="PrivatePopLogin" />
+      <OUT_DEP PROPERTY="PrivatePopPassword" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="fetchmailrc">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+  
+  <!-- ********************* -->
+  <PROPERTY ID="PrivatePopLogin"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+      <IN_DEP PROPERTY="PrivatePopPassword" />
+      <IN_DEP PROPERTY="PrivatePopServer" />
+      <OUT_DEP PROPERTY="PrivatePopPassword" />
+      <OUT_DEP PROPERTY="PrivatePopServer" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="fetchmailrc">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+  
+  <!-- ************************ -->
+  <PROPERTY ID="PrivatePopPassword"
+	    MIGHT_BE_NULL="true">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="HomeDirectory" />
+      <IN_DEP PROPERTY="PrivatePopServer" />
+      <IN_DEP PROPERTY="PrivatePopLogin" />
+      <OUT_DEP PROPERTY="PrivatePopServer" />
+      <OUT_DEP PROPERTY="PrivatePopLogin" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="fetchmailrc">
+      <OPTIONAL_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+  
+
+
+  <!-- ****************** -->
+  <PROPERTY ID="MailAliases">
+    <INOUT HANDLE="virtual">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+    <OUT HANDLE="postmap_aliases">
+      <FUNCTION/>
+    </OUT>
+  </PROPERTY>
+
+  <!-- ************************ -->
+  <PROPERTY ID="DistributionLists">
+    <INOUT HANDLE="dlists">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+    <OUT HANDLE="postmap_dlists">
+      <FUNCTION/>
+    </OUT>
+  </PROPERTY>
+
+
+
+  <!-- ****************** -->
+  <PROPERTY ID="PaulAGroups">
+    <INOUT HANDLE="group">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+  <!-- *********************** -->
+  <PROPERTY ID="PaulAPermissions">
+    <DEPENDENCIES>
+      <IN_DEP PROPERTY="PaulAGroups" />
+    </DEPENDENCIES>
+    <INOUT HANDLE="rights">
+      <REQUIRED_ASSIGNMENT/>
+      <FUNCTION/>
+    </INOUT>
+  </PROPERTY>
+
+
+
+
+  <!-- ********************* -->
+  <!-- **** KEYBINDINGS **** -->
+  <!-- ********************* -->
+
+  <KEYBINDINGS>
+    <IN HANDLE="group">
+    </IN>
+  </KEYBINDINGS>
+
+
+  <!-- ****************** -->
+  <!-- **** INSTANCE **** -->
+  <!-- ****************** -->
+
+<!--    <INSTANCE> -->
+
+<!--      <CREATE_INSTANCE> -->
+<!--      </CREATE_INSTANCE> -->
+
+<!--    </INSTANCE> -->
+
+
+  <!-- ****************** -->
+  <!-- **** SECTIONS **** -->
+  <!-- ****************** -->
+
+  <SECTION ID="s1">
+    <REGEXP MODIFIERS="ms">(.*)^($KEY_Login:.+?)$(.*)</REGEXP>
+    <ERROR_NOT_FOUND CODE="6"/>
+  </SECTION>
+
+
+  <!-- ***************** -->
+  <!-- **** HANDLES **** -->
+  <!-- ***************** -->
+
+  <HANDLE ID="passwd"          NO="1"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&passwd;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="group"           NO="3"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&group;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+  
+  <HANDLE ID="rights"          NO="4"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&rights;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+  
+  <HANDLE ID="virtual"         NO="5"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&virtual;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="webaccess"       NO="7"      TYPE="FILE"        ACCESS="RW"
+	  NAME="&webaccess;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+    <ERROR ONREAD="false"/>
+  </HANDLE>
+
+  <HANDLE ID="forward"         NO="8"      TYPE="FILE"        ACCESS="RW">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+    <ERROR ONREAD="false"/>
+  </HANDLE>
+  
+  <HANDLE ID="replytext"       NO="9"      TYPE="FILE"        ACCESS="RW">
+    <ERROR ONREAD="false"/>
+  </HANDLE>
+
+  <HANDLE ID="fetchmailrc"     NO="10"     TYPE="FILE"        ACCESS="RW">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+    <REMOVE IF_EMPTY="true"/>
+    <ERROR ONREAD="false"/>
+  </HANDLE>
+  
+  <HANDLE ID="dlists"          NO="11"     TYPE="FILE"        ACCESS="RW"
+        NAME="&dlists;">
+    <WHITESPACE WRITE=" " />
+    <COMMENTS>
+      <READ.LINE>#</READ.LINE>
+      <WRITE.LINE> #</WRITE.LINE>
+    </COMMENTS>
+  </HANDLE>
+
+  <HANDLE ID="dummy"           NO="12"     TYPE="DUMMY"       ACCESS="RW">
+  </HANDLE>
+
+  <HANDLE ID="postmap_dlists"  NO="13"     TYPE="COMMAND"     ACCESS="W"
+	NAME="&postmap_dlists;">
+  </HANDLE>
+  
+  <HANDLE ID="postmap_aliases" NO="14"     TYPE="COMMAND"     ACCESS="W"
+	NAME="&postmap_aliases;">
+  </HANDLE>
+
+</PAULA_CONFIG>
+
+<!--
+Copyright (c) 2000 ID-PRO Deutschland GmbH. All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+-->

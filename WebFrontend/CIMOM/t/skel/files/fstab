@@ -1,0 +1,10 @@
+/dev/hda6               /                       ext2    defaults        1 1
+/dev/hda1               /boot                   ext2    defaults        1 2
+/dev/cdrom              /mnt/cdrom              iso9660 noauto,owner,ro 0 0
+/dev/hda8               /rescue                 ext2    defaults        1 2
+/dev/hda5               /var                    ext2    defaults        1 2
+/dev/hda7               swap                    swap    defaults        0 0
+/dev/fd0                /mnt/floppy             ext2    noauto,owner    0 0
+none                    /proc                   proc    defaults        0 0
+none                    /dev/pts                devpts  gid=5,mode=620  0 0
+fs3:/export/home        /home                   nfs     rsize=8192,wsize=8192,soft,nodev,nolock,nosuid 0 0

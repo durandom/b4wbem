@@ -1,0 +1,6 @@
+#       Forwarding specification for Internet Junkbuster 2.0
+#
+#	Uncomment the last line if you want to use squid.
+#*               localhost:3129  .       .
+#
+

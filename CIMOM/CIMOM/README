@@ -1,0 +1,149 @@
+
+				PaulA
+				=====
+
+
+PaulA intends to be an administration system for Linux. It is based on
+libCIM, which serves as a basis for an implementation of the
+Common Information Model (CIM). In particular, PaulA offers a
+CIM Object Manager (cimom), and a sample CIM Client. 
+
+See README.PaulA for using instructions.
+
+Try `perldoc lib/PaulA.pm' for some technical informations. 
+(Not yet complete!)
+
+See the file COPYING for copyright and warranty information.
+
+See the file lib/PaulA.pm for version number.
+
+The file repository/xmlRoot/PaulA/CIM_Schema23.xml can be found at
+http://www.dmtf.org/spec/cim_schema_v23.html
+
+
+
+Requirements
+------------
+
+First of all, you need libCIM. Get and install the latest version of it.
+You find it at the same place you found this package ;-)
+If you don't want to (or can't) install libCIM into the system,
+you can place it parallel to the PaulA package, and everything will
+work "out if the box".
+The only thing you have to do in this case is to create two links 
+"libCIM" resp. "PaulA" pointing to the "libCIM-[version]" resp. 
+"PaulA-[version]" directory, 
+
+
+Then, the cimom-engine RPM must be installed. If you haven't done
+this already, get the latest version of the cimom-engine Source-RPM (.src.rpm)
+from  ftp://ftp.id-pro.de/pub/CIM/SRPMS.
+
+Then perform the following steps:
+$ rpm -i cimom-engine-(version).src.rpm
+$ cd [rpmroot]/SPECS   
+# (rpmroot is /usr/src/redhat   under RedHat
+#  and        /usr/src/packages under SuSE)
+
+$ rpm -ba cimom-engine.spec
+# May take a while...
+
+$ rpm -ivh ../RPMS/i386/cimom-engine-(version).rpm
+
+
+Besides libCIM you need some other non standard Perl modules.
+We have mentioned this in the README of the libCIM package.
+Please take a look at it, if you haven't done this already.
+
+Furthermore, you need a properly installed nsgmls. It's included in
+either of the RPMs "jade" (Red Hat) and "sp" (SuSE).
+
+
+
+Configuration
+-------------
+
+To configure, cd to the directory that contains this README file
+and type the following
+
+        perl Makefile.PL
+
+Then to build you run make.
+
+        make
+
+You can then test the module by typing:
+
+        make test
+
+
+An installation is neither needed nor supported at the moment.
+
+
+A remark to "make": when you call `make' the following file will be 
+created:
+
+    etc/cimomserver.xml
+
+It is created out of a "template" etc/templates/cimomserver.xml.
+So don't be surprised when you change something in this file and it
+is gone after the next call to "make". If you want to make permanent
+changes, you must change the template.
+
+Furthermore, all files in t/system/orig are copied to t/system.
+These are "pseudo system files", which are treated by the providers.
+If you play with the providers and want to begin from scratch at some
+point, just do a `make config', and the original files are copied again.
+ 
+
+
+What you will find in the subdirectories:
+-----------------------------------------
+
+t/
+	Test scripts
+
+t/system/
+	The location were the test providers expect the "system files"
+	to be.	
+
+t/system/orig/
+	Pseudo "system files" for provider testing. They are copied
+	to t/system during make.
+
+bin/
+	Contains the cimom, and a test CIM Client. 
+	See README.PaulA for details
+
+etc/
+	Currently no file from CVS. But while "make" a cimom 
+	configuration file will be created in this directory 
+	for later usage
+
+etc/templates/
+	Template file for automatic generation of a CIMOM config file. 
+	Needed by config.PL, which is called during `make'.
+
+lib/PaulA/
+	The main library location.
+	Here you find a couple of Perl modules.
+
+repository/
+	CIMOM's repository :)
+
+
+
+
+Further informations
+--------------------
+
+Please visit the libCIM/PaulA website:
+http://paula.id-pro.de
+
+There is a mailing list for libCIM/PaulA: Please visit
+http://paula.id-pro.de/mailinglist.html
+for details.
+
+If you want to contribute good ideas or some code, or if you have found
+a problem with the existing code, please feel free to contact us via
+the mailing list or send an email to any of the AUTHORS.
