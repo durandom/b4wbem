@@ -1,5 +1,5 @@
 <!DOCTYPE config [
-  <!ENTITY secrets SYSTEM "/etc/percimon/cimclient-secrets.xml">
+  <!ENTITY secrets SYSTEM "/etc/b4wbem/cimclient-secrets.xml">
 ]>
 
 <config>
