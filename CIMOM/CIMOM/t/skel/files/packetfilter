@@ -1,8 +1,0 @@
-# kommt noch mehr hin
-
-
-echo "Telnet bla"
-/etc/packetfilter/telnet
-
-# vorher Einfügen 
-
