@@ -1,0 +1,75 @@
+0.51 (2000-12-20)
+  - updated documentation (POD)
+  - bugfix due to several warnings of uninitialized values in OUT
+    handles in provider.
+  - implemented FORCE_WRITE features in PROPERTY/OUT's and handles
+  - moved some files in t/skel/ to more suggestive places
+
+0.50 (2000-12-07)
+  - added basic authentication stuff
+  - did some major changes in test cimom behaviour (introduced t/skel/
+    resp. t/sandbox, introduced the test CIM namespace "root/test",
+    introduced first "real life" provider "paul", ...)
+  - added way more t-tests (the interactive tests will become useless
+    in the next future)
+  - improvements in t/cimomtest
+  - major changes, some additions, and a lot of bug fixes in provider
+    support, including new the Intrinsic Methods EnumerateInstances and
+    EnumerateInstancenames
+  - splitting of Provider.pm into several files (Provider*.pm)
+  - Provider.pm: added writeProperty_*() and other function, renamed
+    system2perl_*() to system2paula_*() [same with perl2system_*()]
+  - supporting "DUMMY" handles
+  - added new CIM classes, now supporting (more or less)
+         PaulA_Administration.xml
+         PaulA_DHCP.xml
+         PaulA_Fax.xml
+         PaulA_Firewall.xml
+         PaulA_Group.xml
+         PaulA_HTTPD.xml
+         PaulA_ISP.xml
+         PaulA_IncomingMailServer.xml
+         PaulA_Instance.xml
+         PaulA_MTA.xml
+         PaulA_Mail.xml
+         PaulA_OutgoingMailDomain.xml
+         PaulA_RASUser.xml
+         PaulA_System.xml
+         PaulA_User.xml
+         PaulA_VPN.xml
+         PaulA_WWWFilter.xml
+  - changed usernames to names of funny cartoon characters  <:oD
+
+0.41 (2000-09-18)
+  - added GetClass, GetInstance, ModifyInstance, GetProperty and
+    SetProperty tests
+  - changes in Makefile.PL: "make test" explicitly sets CIM_CLIENT_CONFIG
+    variable now
+  - bugfixes in t/cimomtest, PaulA_User.pm
+
+0.4 (2000-09-18)
+  - CIMOM is a HTTP-CIMOM now
+  - introduced lib/PaulA.pm (contains version number and some doc)
+  - bugfixes and minor improvements in provider modules
+  - removal of all FIFO stuff
+  - tests have a certain order now (start cimom, do some tests, stop cimom)
+
+0.3 (2000-09-01)
+  - added the first "universal" provider support. Therefore some tests
+    (from t/ and bin/) had to be preliminary removed.
+  - added provider documentation (unfortunately preliminary in german
+    language only)
+  - bugfix for "Associators" and  "AssociatorNames" methods 
+  - added interactive tests for the association related functions
+
+0.2 (2000-08-24)
+  - Repository.pm handles additional CIM methods now:
+    References, ReferenceNames, Associators, AssociatorNames
+  - introduced name prefix of the files in the repository ("S-" for
+    schemas, "C-" for classes, ...)
+  - "make" splits up repository/xmlRoot/PaulA/S-CIM_Schema23.xml into a
+    lot of single C-*.xml files for more efficient usage of the repository.
+  - added more tests
+
+0.1 (2000-07-22)
+  - first release.

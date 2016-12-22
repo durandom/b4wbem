@@ -1,0 +1,62 @@
+
+How to use PaulA
+----------------
+
+(We assume that you have successfully configured and installed everything.)
+
+
+1. Start the cimom (for details of cimom configuration, read the cimom
+   manpage):
+
+   $ cd bin/
+   $ ./cimom -f ../etc/cimserver.xml start && echo success
+
+   If you get the output "success", everything worked. In any case, 
+   you should do a 
+
+   $ tail -f /tmp/cimom/logs/error_log
+   
+   in another window to get valuable informations about cimom problems
+   or activities.
+
+
+
+2. "Talk" with the cimom
+
+   This takes place in the usual Client/Server manner: You make a request
+   and then you get a response.
+   The testclient.pl script in the bin/ directory enables you to make
+   CIM requests. It is used in the following way:
+   - Choose a "[IntrinsicMethod].pm" file (say GetClass.pm)
+   - Run the test client with this file as an argument:
+
+   $ ./testclient.pl GetClass.pm 
+
+   If that worked, you see a menu now. Try some menu entries and look 
+   at the responses. Type <Ctrl>-d to exit.
+
+   
+   If you test Intrinsic Methods which involve providers, it is *extremly*
+   interesting to watch how the "system files" change. Example:
+
+   $ ./testclient.pl SetProperty.pm
+
+   In another window, chdir to t/system/ and then do a
+
+   $ watch cat passwd
+
+   Now when you perform requests like 
+
+   (12) SetProperty PaulA_User.Login=hsimpson, LoginShell => 'perl'
+ 
+   with the testclient, you will see, how the "hsimpson:..." line in the
+   passwd file changes.
+
+   Another example: The request
+
+   (22) SetProperty PaulA_System, MouseDevice => '/dev/mouse'
+
+   changes the "Device" entry in XF86Config.
+
+   Try to find out which of the remaining requests change which file(s)...
+
